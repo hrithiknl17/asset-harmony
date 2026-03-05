@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, PlusCircle, FolderTree, ScanSearch, BarChart3, Package, LogOut, User, ShoppingCart } from "lucide-react";
+import { LayoutDashboard, ClipboardList, PlusCircle, FolderTree, ScanSearch, BarChart3, Package, LogOut, User, ShoppingCart, Camera } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -10,6 +10,7 @@ const navItems = [
   { to: "/add-asset", icon: PlusCircle, label: "Add Asset", roles: ["manager"] },
   { to: "/categories", icon: FolderTree, label: "Categories", roles: ["manager", "auditor"] },
   { to: "/audit", icon: ScanSearch, label: "Audit Workflow", roles: ["manager", "auditor"] },
+  { to: "/audit/scan", icon: Camera, label: "Scan & Audit", roles: ["manager", "auditor"] },
   { to: "/reports", icon: BarChart3, label: "Reports", roles: ["manager"] },
   { to: "/reorder", icon: ShoppingCart, label: "Reorder Items", roles: ["manager"] },
 ];
