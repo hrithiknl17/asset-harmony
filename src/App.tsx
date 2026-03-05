@@ -10,6 +10,7 @@ import AssetRegister from "@/pages/AssetRegister";
 import AddAsset from "@/pages/AddAsset";
 import Categories from "@/pages/Categories";
 import AuditWorkflow from "@/pages/AuditWorkflow";
+import AuditScan from "@/pages/AuditScan";
 import Reports from "@/pages/Reports";
 import Reorder from "@/pages/Reorder";
 import Login from "@/pages/Login";
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/add-asset" element={<AddAsset />} />
               <Route path="/categories" element={<Categories />} />
               <Route path="/audit" element={<AuditWorkflow />} />
+              <Route path="/audit/scan" element={<AuditScan />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/reorder" element={<Reorder />} />
             </Route>
