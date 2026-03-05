@@ -126,7 +126,7 @@ const Dashboard = () => {
                 {logs.slice(0, 5).map((log: any) => (
                   <div key={log.id} className="text-xs border-l-2 border-secondary/30 pl-3 py-1">
                     <p className="font-medium">{log.new_status}</p>
-                    <p className="text-muted-foreground">{log.profiles?.full_name || "Unknown"} • {new Date(log.created_at).toLocaleDateString()}</p>
+                    <p className="text-muted-foreground">{(log.profiles as any)?.full_name || "Unknown"} • {new Date(log.created_at).toLocaleDateString()}</p>
                   </div>
                 ))}
               </div>
