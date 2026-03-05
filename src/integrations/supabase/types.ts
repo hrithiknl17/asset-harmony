@@ -14,16 +14,164 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      assets: {
+        Row: {
+          asset_id: string
+          audit_status: string
+          building: string
+          category: string
+          condition: string
+          created_at: string
+          department: string
+          floor: string
+          id: string
+          last_audit_date: string | null
+          last_audited_by: string | null
+          location: string
+          model: string
+          name: string
+          purchase_date: string | null
+          room: string
+          serial_number: string
+          updated_at: string
+          vendor: string
+        }
+        Insert: {
+          asset_id: string
+          audit_status?: string
+          building?: string
+          category: string
+          condition?: string
+          created_at?: string
+          department?: string
+          floor?: string
+          id?: string
+          last_audit_date?: string | null
+          last_audited_by?: string | null
+          location?: string
+          model?: string
+          name: string
+          purchase_date?: string | null
+          room?: string
+          serial_number?: string
+          updated_at?: string
+          vendor?: string
+        }
+        Update: {
+          asset_id?: string
+          audit_status?: string
+          building?: string
+          category?: string
+          condition?: string
+          created_at?: string
+          department?: string
+          floor?: string
+          id?: string
+          last_audit_date?: string | null
+          last_audited_by?: string | null
+          location?: string
+          model?: string
+          name?: string
+          purchase_date?: string | null
+          room?: string
+          serial_number?: string
+          updated_at?: string
+          vendor?: string
+        }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: {
+          asset_id: string
+          auditor_id: string
+          created_at: string
+          id: string
+          new_status: string
+          notes: string | null
+          previous_status: string | null
+        }
+        Insert: {
+          asset_id: string
+          auditor_id: string
+          created_at?: string
+          id?: string
+          new_status: string
+          notes?: string | null
+          previous_status?: string | null
+        }
+        Update: {
+          asset_id?: string
+          auditor_id?: string
+          created_at?: string
+          id?: string
+          new_status?: string
+          notes?: string | null
+          previous_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string
+          id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string
+          id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "manager" | "auditor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +298,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["manager", "auditor"],
+    },
   },
 } as const
