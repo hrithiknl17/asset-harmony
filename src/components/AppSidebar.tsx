@@ -1,5 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, PlusCircle, FolderTree, ScanSearch, BarChart3, Package } from "lucide-react";
+import { LayoutDashboard, ClipboardList, PlusCircle, FolderTree, ScanSearch, BarChart3, Package, LogOut, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -12,6 +14,7 @@ const navItems = [
 
 const AppSidebar = () => {
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col bg-sidebar border-r border-sidebar-border">
@@ -41,8 +44,19 @@ const AppSidebar = () => {
           );
         })}
       </nav>
-      <div className="border-t border-sidebar-border px-5 py-4">
-        <p className="text-[11px] text-sidebar-foreground/40">v1.0 · Last Audit: Feb 28, 2026</p>
+      <div className="border-t border-sidebar-border px-4 py-4 space-y-3">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent">
+            <User className="h-4 w-4 text-sidebar-foreground" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-sidebar-foreground truncate">{user?.name}</p>
+            <p className="text-[10px] text-sidebar-foreground/50 truncate">{user?.role}</p>
+          </div>
+        </div>
+        <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50" onClick={logout}>
+          <LogOut className="h-3.5 w-3.5" /> Sign Out
+        </Button>
       </div>
     </aside>
   );
