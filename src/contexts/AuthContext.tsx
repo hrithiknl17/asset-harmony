@@ -1,18 +1,26 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import type { User } from "@supabase/supabase-js";
 
 type AppRole = "manager" | "auditor";
 
+interface DummyUser {
+  id: string;
+  email: string;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: User | null;
+  user: DummyUser | null;
   profile: { full_name: string } | null;
   role: AppRole | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
 }
+
+const DUMMY_USERS = [
+  { email: "manager@assettrack.com", password: "manager123", id: "mgr-001", name: "Hrithik (Manager)", role: "manager" as AppRole },
+  { email: "auditor@assettrack.com", password: "auditor123", id: "aud-001", name: "Lakkanna (Auditor)", role: "auditor" as AppRole },
+];
 
 const defaultValue: AuthContextType = {
   isAuthenticated: false,
@@ -29,52 +37,40 @@ const AuthContext = createContext<AuthContextType>(defaultValue);
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<DummyUser | null>(null);
   const [profile, setProfile] = useState<{ full_name: string } | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserData = async (userId: string) => {
-    const [profileRes, roleRes] = await Promise.all([
-      supabase.from("profiles").select("full_name").eq("id", userId).single(),
-      supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
-    ]);
-    if (profileRes.data) setProfile(profileRes.data);
-    if (roleRes.data) setRole(roleRes.data.role as AppRole);
-  };
-
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        setTimeout(() => fetchUserData(session.user.id), 0);
-      } else {
-        setUser(null);
-        setProfile(null);
-        setRole(null);
+    const saved = localStorage.getItem("dummy_user");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const match = DUMMY_USERS.find(u => u.id === parsed.id);
+      if (match) {
+        setUser({ id: match.id, email: match.email });
+        setProfile({ full_name: match.name });
+        setRole(match.role);
       }
-      setLoading(false);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-        fetchUserData(session.user.id);
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    }
+    setLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: error.message };
+    const match = DUMMY_USERS.find(u => u.email === email && u.password === password);
+    if (!match) return { error: "Invalid email or password" };
+    setUser({ id: match.id, email: match.email });
+    setProfile({ full_name: match.name });
+    setRole(match.role);
+    localStorage.setItem("dummy_user", JSON.stringify({ id: match.id }));
     return {};
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
+    setRole(null);
+    localStorage.removeItem("dummy_user");
   };
 
   return (

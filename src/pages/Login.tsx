@@ -118,14 +118,26 @@ const Login = () => {
           </form>
         </motion.div>
 
-        <motion.p
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="text-center text-xs text-muted-foreground"
+          className="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30 p-3 space-y-1"
         >
-          Contact your manager for login credentials
-        </motion.p>
+          <p className="text-xs font-medium text-muted-foreground text-center">Demo Credentials</p>
+          <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+            <div className="space-y-0.5">
+              <p className="font-semibold text-foreground/70">Manager</p>
+              <p>manager@assettrack.com</p>
+              <p>manager123</p>
+            </div>
+            <div className="space-y-0.5">
+              <p className="font-semibold text-foreground/70">Auditor</p>
+              <p>auditor@assettrack.com</p>
+              <p>auditor123</p>
+            </div>
+          </div>
+        </motion.div>
       </motion.div>
     </div>
   );
