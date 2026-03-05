@@ -11,6 +11,7 @@ import AddAsset from "@/pages/AddAsset";
 import Categories from "@/pages/Categories";
 import AuditWorkflow from "@/pages/AuditWorkflow";
 import Reports from "@/pages/Reports";
+import Reorder from "@/pages/Reorder";
 import Login from "@/pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -44,6 +45,7 @@ const App = () => (
               <Route path="/categories" element={<Categories />} />
               <Route path="/audit" element={<AuditWorkflow />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/reorder" element={<Reorder />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
