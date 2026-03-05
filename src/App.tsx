@@ -18,13 +18,19 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const ProtectedRoutes = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return (
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
+    </div>
+  );
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   return <AppLayout />;
 };
 
 const LoginRoute = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return null;
   if (isAuthenticated) return <Navigate to="/" replace />;
   return <Login />;
 };
