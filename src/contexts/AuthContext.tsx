@@ -11,7 +11,6 @@ interface AuthContextType {
   role: AppRole | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ error?: string }>;
-  signup: (email: string, password: string, fullName: string, role: AppRole) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
 }
 
@@ -22,7 +21,6 @@ const defaultValue: AuthContextType = {
   role: null,
   loading: true,
   login: async () => ({}),
-  signup: async () => ({}),
   logout: async () => {},
 };
 
@@ -39,7 +37,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchUserData = async (userId: string) => {
     const [profileRes, roleRes] = await Promise.all([
       supabase.from("profiles").select("full_name").eq("id", userId).single(),
-      supabase.from("user_roles").select("role").eq("user_id", userId).single(),
+      supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
     ]);
     if (profileRes.data) setProfile(profileRes.data);
     if (roleRes.data) setRole(roleRes.data.role as AppRole);
@@ -49,7 +47,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         setUser(session.user);
-        // Use setTimeout to avoid Supabase deadlock
         setTimeout(() => fetchUserData(session.user.id), 0);
       } else {
         setUser(null);
@@ -76,27 +73,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return {};
   };
 
-  const signup = async (email: string, password: string, fullName: string, selectedRole: AppRole) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } },
-    });
-    if (error) return { error: error.message };
-
-    // Assign role
-    if (data.user) {
-      await supabase.from("user_roles").insert({ user_id: data.user.id, role: selectedRole });
-    }
-    return {};
-  };
-
   const logout = async () => {
     await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated: !!user, user, profile, role, loading, login, signup, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated: !!user, user, profile, role, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

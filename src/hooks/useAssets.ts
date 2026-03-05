@@ -41,10 +41,8 @@ export const useUpdateAuditStatus = () => {
 
   return useMutation({
     mutationFn: async ({ assetId, newStatus, notes }: { assetId: string; newStatus: string; notes?: string }) => {
-      // Get current asset
       const { data: asset } = await supabase.from("assets").select("audit_status").eq("id", assetId).single();
 
-      // Update asset
       const { error: updateError } = await supabase
         .from("assets")
         .update({
@@ -56,7 +54,6 @@ export const useUpdateAuditStatus = () => {
         .eq("id", assetId);
       if (updateError) throw updateError;
 
-      // Insert audit log
       const { error: logError } = await supabase.from("audit_logs").insert({
         asset_id: assetId,
         auditor_id: user!.id,
@@ -76,7 +73,7 @@ export const useAuditLogs = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("audit_logs")
-        .select("*, profiles:auditor_id(full_name)")
+        .select("*, profiles(full_name)")
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;
