@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { CheckCircle2, Clock, AlertTriangle, ClipboardCheck, ScanSearch, BarChart3, FileCheck, Pencil } from "lucide-react";
+import { CheckCircle2, Clock, AlertTriangle, ClipboardCheck, ScanSearch, BarChart3, FileCheck, Pencil, Search, X } from "lucide-react";
 import { useAssets, useUpdateAuditStatus, type DbAsset } from "@/hooks/useAssets";
 import { useAuth } from "@/contexts/AuthContext";
-import { sampleAssets } from "@/data/assets";
+import { sampleAssets, CATEGORIES } from "@/data/assets";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -18,6 +19,8 @@ const steps = [
   { icon: FileCheck, title: "4. Reconciliation", desc: "Investigate and resolve each discrepancy. Update the register with corrections. Mark assets as verified." },
 ];
 
+const BUILDINGS = [...new Set(sampleAssets.map(a => a.building))];
+
 const AuditWorkflow = () => {
   const { data: dbAssets, isLoading } = useAssets();
   const updateAudit = useUpdateAuditStatus();
@@ -25,8 +28,10 @@ const AuditWorkflow = () => {
   const [editAsset, setEditAsset] = useState<any | null>(null);
   const [newStatus, setNewStatus] = useState("Verified");
   const [notes, setNotes] = useState("");
+  const [search, setSearch] = useState("");
+  const [catFilter, setCatFilter] = useState("all");
+  const [buildingFilter, setBuildingFilter] = useState("all");
 
-  // Fallback to sample data
   const assets = dbAssets && dbAssets.length > 0
     ? dbAssets
     : sampleAssets.map(a => ({
@@ -39,9 +44,19 @@ const AuditWorkflow = () => {
         created_at: "", updated_at: "",
       }));
 
-  const verified = assets.filter(a => a.audit_status === "Verified");
-  const pending = assets.filter(a => a.audit_status === "Pending");
-  const discrepancy = assets.filter(a => a.audit_status === "Discrepancy");
+  const hasFilters = search !== "" || catFilter !== "all" || buildingFilter !== "all";
+
+  const filteredAssets = useMemo(() => assets.filter(a => {
+    const s = search.toLowerCase();
+    const matchSearch = !search || a.name.toLowerCase().includes(s) || a.asset_id.toLowerCase().includes(s);
+    const matchCat = catFilter === "all" || a.category === catFilter;
+    const matchBuilding = buildingFilter === "all" || a.building === buildingFilter;
+    return matchSearch && matchCat && matchBuilding;
+  }), [assets, search, catFilter, buildingFilter]);
+
+  const verified = filteredAssets.filter(a => a.audit_status === "Verified");
+  const pending = filteredAssets.filter(a => a.audit_status === "Pending");
+  const discrepancy = filteredAssets.filter(a => a.audit_status === "Discrepancy");
 
   const canEdit = role === "auditor" || role === "manager";
 
@@ -76,7 +91,7 @@ const AuditWorkflow = () => {
       </motion.div>
 
       <motion.div variants={item} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {steps.map((step, i) => (
+        {steps.map((step) => (
           <motion.div
             key={step.title}
             variants={item}
@@ -90,10 +105,37 @@ const AuditWorkflow = () => {
         ))}
       </motion.div>
 
+      {/* Search & Filters */}
+      <motion.div variants={item} className="flex flex-wrap gap-2">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input placeholder="Search assets..." className="pl-9 h-9" value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+        <Select value={catFilter} onValueChange={setCatFilter}>
+          <SelectTrigger className="w-[150px] h-9 text-xs"><SelectValue placeholder="Category" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={buildingFilter} onValueChange={setBuildingFilter}>
+          <SelectTrigger className="w-[150px] h-9 text-xs"><SelectValue placeholder="Building" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Buildings</SelectItem>
+            {BUILDINGS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        {hasFilters && (
+          <Button variant="ghost" size="sm" className="h-9 gap-1 text-xs" onClick={() => { setSearch(""); setCatFilter("all"); setBuildingFilter("all"); }}>
+            <X className="h-3 w-3" /> Clear
+          </Button>
+        )}
+      </motion.div>
+
       <motion.div variants={item} className="grid gap-6 lg:grid-cols-3">
         {[
-          { title: "Verified", icon: CheckCircle2, items: verified, color: "text-success", badge: "default" as const },
-          { title: "Pending Verification", icon: Clock, items: pending, color: "text-warning", badge: "secondary" as const },
+          { title: "Verified", icon: CheckCircle2, items: verified, color: "text-emerald-600", badge: "default" as const },
+          { title: "Pending Verification", icon: Clock, items: pending, color: "text-amber-500", badge: "secondary" as const },
           { title: "Discrepancies", icon: AlertTriangle, items: discrepancy, color: "text-destructive", badge: "destructive" as const },
         ].map(group => (
           <motion.div key={group.title} variants={item} className="rounded-xl border bg-card p-5 shadow-sm">
@@ -122,7 +164,7 @@ const AuditWorkflow = () => {
                         className="h-7 w-7"
                         onClick={() => {
                           setEditAsset(a);
-                          setNewStatus(a.audit_status === "Verified" ? "Verified" : "Verified");
+                          setNewStatus("Verified");
                         }}
                       >
                         <Pencil className="h-3.5 w-3.5" />
@@ -137,7 +179,6 @@ const AuditWorkflow = () => {
         ))}
       </motion.div>
 
-      {/* Edit Dialog */}
       <Dialog open={!!editAsset} onOpenChange={() => setEditAsset(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -169,13 +210,7 @@ const AuditWorkflow = () => {
               </div>
               <div>
                 <label className="text-sm font-medium">Notes</label>
-                <Textarea
-                  value={notes}
-                  onChange={e => setNotes(e.target.value)}
-                  placeholder="Audit observations..."
-                  rows={3}
-                  className="mt-1.5"
-                />
+                <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Audit observations..." rows={3} className="mt-1.5" />
               </div>
             </div>
           )}

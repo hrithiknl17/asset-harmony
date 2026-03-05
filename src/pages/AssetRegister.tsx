@@ -1,69 +1,142 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { sampleAssets, CATEGORIES, CONDITIONS, type Asset } from "@/data/assets";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Download, QrCode } from "lucide-react";
+import { Search, Download, QrCode, Printer, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { QRCodeSVG } from "qrcode.react";
+import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 const statusColor = (s: string) =>
   s === "Verified" ? "default" : s === "Pending" ? "secondary" : "destructive";
 
 const conditionColor = (c: string) => {
-  if (c === "New") return "text-success";
-  if (c === "Good") return "text-info";
-  if (c === "Fair") return "text-warning";
+  if (c === "New") return "text-emerald-600";
+  if (c === "Good") return "text-blue-600";
+  if (c === "Fair") return "text-amber-600";
   return "text-destructive";
+};
+
+const AUDIT_STATUSES = ["Verified", "Pending", "Discrepancy"];
+const BUILDINGS = [...new Set(sampleAssets.map(a => a.building))];
+const DEPARTMENTS = [...new Set(sampleAssets.map(a => a.department))];
+
+const exportCSV = (data: Asset[]) => {
+  const headers = ["Asset ID", "Name", "Category", "Location", "Vendor", "Model", "Serial Number", "Purchase Date", "Condition", "Audit Status", "Last Audit Date"];
+  const rows = data.map(a => [a.assetId, a.name, a.category, a.location, a.vendor, a.model, a.serialNumber, a.purchaseDate, a.condition, a.auditStatus, a.lastAuditDate]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `asset-register-${new Date().toISOString().split("T")[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast.success("CSV exported successfully!");
 };
 
 const AssetRegister = () => {
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState<string>("all");
   const [condFilter, setCondFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [buildingFilter, setBuildingFilter] = useState<string>("all");
+  const [deptFilter, setDeptFilter] = useState<string>("all");
   const [qrAsset, setQrAsset] = useState<Asset | null>(null);
 
-  const filtered = sampleAssets.filter(a => {
-    const matchSearch = !search || a.name.toLowerCase().includes(search.toLowerCase()) || a.assetId.toLowerCase().includes(search.toLowerCase()) || a.serialNumber.toLowerCase().includes(search.toLowerCase());
+  const hasActiveFilters = catFilter !== "all" || condFilter !== "all" || statusFilter !== "all" || buildingFilter !== "all" || deptFilter !== "all" || search !== "";
+
+  const clearFilters = () => {
+    setSearch("");
+    setCatFilter("all");
+    setCondFilter("all");
+    setStatusFilter("all");
+    setBuildingFilter("all");
+    setDeptFilter("all");
+  };
+
+  const filtered = useMemo(() => sampleAssets.filter(a => {
+    const s = search.toLowerCase();
+    const matchSearch = !search || a.name.toLowerCase().includes(s) || a.assetId.toLowerCase().includes(s) || a.serialNumber.toLowerCase().includes(s) || a.vendor.toLowerCase().includes(s);
     const matchCat = catFilter === "all" || a.category === catFilter;
     const matchCond = condFilter === "all" || a.condition === condFilter;
-    return matchSearch && matchCat && matchCond;
-  });
+    const matchStatus = statusFilter === "all" || a.auditStatus === statusFilter;
+    const matchBuilding = buildingFilter === "all" || a.building === buildingFilter;
+    const matchDept = deptFilter === "all" || a.department === deptFilter;
+    return matchSearch && matchCat && matchCond && matchStatus && matchBuilding && matchDept;
+  }), [search, catFilter, condFilter, statusFilter, buildingFilter, deptFilter]);
 
   return (
-    <div className="space-y-6">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Asset Register</h1>
           <p className="text-sm text-muted-foreground">Master inventory of all office assets</p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Download className="h-4 w-4" /> Export CSV
-        </Button>
-      </div>
-
-      <div className="flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search by name, ID, or serial..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => window.print()}>
+            <Printer className="h-4 w-4" /> Print
+          </Button>
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => exportCSV(filtered)}>
+            <Download className="h-4 w-4" /> Export CSV
+          </Button>
         </div>
-        <Select value={catFilter} onValueChange={setCatFilter}>
-          <SelectTrigger className="w-[180px]"><SelectValue placeholder="Category" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={condFilter} onValueChange={setCondFilter}>
-          <SelectTrigger className="w-[150px]"><SelectValue placeholder="Condition" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Conditions</SelectItem>
-            {CONDITIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-          </SelectContent>
-        </Select>
       </div>
 
+      {/* Search & Filters */}
+      <div className="space-y-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input placeholder="Search by name, ID, serial, or vendor..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Select value={catFilter} onValueChange={setCatFilter}>
+            <SelectTrigger className="w-[160px] h-9 text-xs"><SelectValue placeholder="Category" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={condFilter} onValueChange={setCondFilter}>
+            <SelectTrigger className="w-[140px] h-9 text-xs"><SelectValue placeholder="Condition" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Conditions</SelectItem>
+              {CONDITIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[140px] h-9 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              {AUDIT_STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={buildingFilter} onValueChange={setBuildingFilter}>
+            <SelectTrigger className="w-[150px] h-9 text-xs"><SelectValue placeholder="Building" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Buildings</SelectItem>
+              {BUILDINGS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={deptFilter} onValueChange={setDeptFilter}>
+            <SelectTrigger className="w-[140px] h-9 text-xs"><SelectValue placeholder="Department" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Depts</SelectItem>
+              {DEPARTMENTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" className="h-9 gap-1 text-xs text-muted-foreground" onClick={clearFilters}>
+              <X className="h-3 w-3" /> Clear all
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Table */}
       <div className="rounded-lg border bg-card overflow-auto">
         <table className="w-full text-sm">
           <thead>
@@ -74,8 +147,14 @@ const AssetRegister = () => {
             </tr>
           </thead>
           <tbody>
-            {filtered.map(a => (
-              <tr key={a.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+            {filtered.map((a, i) => (
+              <motion.tr
+                key={a.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: i * 0.02 }}
+                className="border-b last:border-0 hover:bg-muted/30 transition-colors"
+              >
                 <td className="px-4 py-3 font-mono text-xs font-medium">{a.assetId}</td>
                 <td className="px-4 py-3 font-medium">{a.name}</td>
                 <td className="px-4 py-3 text-muted-foreground">{a.category}</td>
@@ -93,7 +172,7 @@ const AssetRegister = () => {
                     <QrCode className="h-4 w-4 text-muted-foreground" />
                   </button>
                 </td>
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>
@@ -119,7 +198,7 @@ const AssetRegister = () => {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 };
 
