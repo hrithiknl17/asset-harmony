@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { Button } from "@/components/ui/button";
 import { Camera, CameraOff } from "lucide-react";
@@ -11,37 +11,56 @@ interface QrScannerProps {
 
 const QrScanner = ({ onScan, scanning, onToggle }: QrScannerProps) => {
   const scannerRef = useRef<Html5Qrcode | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const isRunningRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
+
+  const safeStop = useCallback(async () => {
+    if (scannerRef.current && isRunningRef.current) {
+      isRunningRef.current = false;
+      try {
+        await scannerRef.current.stop();
+      } catch {
+        // Already stopped, ignore
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (!scanning) {
-      scannerRef.current?.stop().catch(() => {});
-      scannerRef.current = null;
+      safeStop();
       return;
     }
 
     const scanner = new Html5Qrcode("qr-reader");
     scannerRef.current = scanner;
+    setError(null);
 
     scanner
       .start(
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 250, height: 250 } },
         (decodedText) => {
-          onScan(decodedText);
+          isRunningRef.current = false;
           scanner.stop().catch(() => {});
+          onScan(decodedText);
           onToggle();
         },
         () => {}
       )
-      .catch((err) => {
+      .then(() => {
+        isRunningRef.current = true;
+      })
+      .catch(() => {
+        isRunningRef.current = false;
         setError("Camera access denied or not available. You can type the Asset ID manually.");
         onToggle();
       });
 
     return () => {
-      scanner.stop().catch(() => {});
+      if (isRunningRef.current) {
+        isRunningRef.current = false;
+        scanner.stop().catch(() => {});
+      }
     };
   }, [scanning]);
 
@@ -58,7 +77,6 @@ const QrScanner = ({ onScan, scanning, onToggle }: QrScannerProps) => {
 
       <div
         id="qr-reader"
-        ref={containerRef}
         className={`overflow-hidden rounded-xl border-2 border-dashed border-primary/30 bg-muted/50 transition-all ${
           scanning ? "h-64" : "h-0 border-0"
         }`}
