@@ -58,7 +58,7 @@ const AssetRegister = () => {
   const [qrAsset, setQrAsset] = useState<DbAsset | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const canDelete = role === "manager";
+  const canDelete = role === "manager" || role === "admin";
 
   useEffect(() => {
     const cat = searchParams.get("category");
