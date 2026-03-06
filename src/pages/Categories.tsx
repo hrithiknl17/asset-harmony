@@ -2,6 +2,7 @@ import { useAssets } from "@/hooks/useAssets";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Monitor, Armchair, Zap, Package, Tv, Building2, MapPin, Music } from "lucide-react";
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
 const catIcons: Record<string, typeof Monitor> = {
   "IT Equipment": Monitor,
@@ -15,6 +16,7 @@ const catIcons: Record<string, typeof Monitor> = {
 };
 
 const Categories = () => {
+  const navigate = useNavigate();
   const { data: dbAssets, isLoading } = useAssets();
 
   const assets = dbAssets || [];
@@ -74,7 +76,7 @@ const Categories = () => {
                 </div>
                 <div className="space-y-1.5">
                   {catAssets.slice(0, 4).map(a => (
-                    <div key={a.id} className="flex justify-between text-xs border rounded px-2.5 py-1.5">
+                    <div key={a.id} onClick={() => navigate(`/register?search=${encodeURIComponent(a.asset_id)}`)} className="flex justify-between text-xs border rounded px-2.5 py-1.5 cursor-pointer hover:bg-accent transition-colors">
                       <span className="truncate">{a.name}</span>
                       <span className="font-mono text-muted-foreground ml-2">{a.asset_id}</span>
                     </div>
@@ -109,7 +111,7 @@ const Categories = () => {
                         {floorAssets.length > 0 ? (
                           <div className="space-y-1">
                             {floorAssets.slice(0, 6).map(a => (
-                              <p key={a.id} className="text-xs text-muted-foreground truncate">• {a.name}</p>
+                              <p key={a.id} onClick={() => navigate(`/register?search=${encodeURIComponent(a.asset_id)}`)} className="text-xs text-muted-foreground truncate cursor-pointer hover:text-foreground transition-colors">• {a.name}</p>
                             ))}
                             {floorAssets.length > 6 && (
                               <p className="text-xs text-muted-foreground italic">+{floorAssets.length - 6} more</p>
