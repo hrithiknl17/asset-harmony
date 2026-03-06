@@ -1,4 +1,5 @@
 import SalesDashboard from "@/pages/SalesDashboard";
+import AuditorDashboard from "@/pages/AuditorDashboard";
 import { Package, Monitor, CheckCircle2, AlertTriangle, Clock, MapPin, Activity, TrendingUp } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import { CATEGORIES } from "@/data/assets";
@@ -34,9 +35,8 @@ const Dashboard = () => {
   const { data: logs } = useAuditLogs();
   const { profile, role } = useAuth();
 
-  if (role === "sales") {
-    return <SalesDashboard />;
-  }
+  if (role === "sales") return <SalesDashboard />;
+  if (role === "auditor") return <AuditorDashboard />;
 
   const displayAssets = assets && assets.length > 0 ? assets : sampleAssets.map(a => ({
     ...a, asset_id: a.assetId, serial_number: a.serialNumber, purchase_date: a.purchaseDate,
@@ -77,7 +77,7 @@ const Dashboard = () => {
           Welcome back, {profile?.full_name || "User"} 👋
         </h1>
         <p className="text-sm text-muted-foreground">
-          {role === "auditor" ? "Your audit dashboard" : "Office asset inventory overview"}
+          Office asset inventory overview
         </p>
       </motion.div>
 
