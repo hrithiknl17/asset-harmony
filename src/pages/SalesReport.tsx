@@ -3,11 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { BarChart3, AlertTriangle, TrendingUp, Package, Send, Crown, Medal, Award } from "lucide-react";
-import { motion } from "framer-motion";
+import PageShell from "@/components/PageShell";
+import EmptyState from "@/components/EmptyState";
+import StatCard from "@/components/StatCard";
 import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
-const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(38, 92%, 50%)", "hsl(0, 72%, 51%)", "hsl(270, 60%, 50%)"];
+const COLORS = ["hsl(222, 62%, 32%)", "hsl(170, 45%, 42%)", "hsl(38, 88%, 48%)", "hsl(0, 68%, 48%)", "hsl(270, 55%, 48%)"];
 
 const SALES_PEOPLE: Record<string, string> = {
   "d0000000-0000-0000-0000-000000000001": "Priya (Sales)",
@@ -17,7 +19,7 @@ const SALES_PEOPLE: Record<string, string> = {
 };
 
 const RANK_ICONS = [Crown, Medal, Award];
-const RANK_COLORS = ["text-yellow-500", "text-gray-400", "text-amber-600"];
+const RANK_COLORS = ["text-warning", "text-muted-foreground", "text-warning"];
 
 const SalesReport = () => {
   const { data: sales } = useSales();
@@ -30,7 +32,6 @@ const SalesReport = () => {
   const totalSales = sales?.length || 0;
   const avgOrderValue = totalSales > 0 ? totalRevenue / totalSales : 0;
 
-  // Top sellers
   const bySeller: Record<string, { revenue: number; count: number; name: string }> = {};
   sales?.forEach((s: any) => {
     const id = s.sold_by;
@@ -42,7 +43,6 @@ const SalesReport = () => {
     .map(([id, data]) => ({ id, ...data }))
     .sort((a, b) => b.revenue - a.revenue);
 
-  // Sales by category
   const byCategory: Record<string, number> = {};
   sales?.forEach((s: any) => {
     const cat = s.products?.category || "Unknown";
@@ -50,7 +50,6 @@ const SalesReport = () => {
   });
   const categoryData = Object.entries(byCategory).map(([name, value]) => ({ name, value }));
 
-  // Sales by day (last 7 days)
   const dailySales: Record<string, number> = {};
   const now = new Date();
   for (let i = 6; i >= 0; i--) {
@@ -73,49 +72,35 @@ const SalesReport = () => {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <BarChart3 className="h-6 w-6 text-primary" /> Sales Report
-        </h1>
-        <p className="text-sm text-muted-foreground">Revenue overview and restock management</p>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <p className="text-sm text-muted-foreground">Total Revenue</p>
-          <p className="text-3xl font-bold text-primary">₹{totalRevenue.toLocaleString()}</p>
-        </div>
-        <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <p className="text-sm text-muted-foreground">Total Sales</p>
-          <p className="text-3xl font-bold">{totalSales}</p>
-        </div>
-        <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <p className="text-sm text-muted-foreground">Avg Order Value</p>
-          <p className="text-3xl font-bold">₹{avgOrderValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-        </div>
+    <PageShell icon={BarChart3} title="Sales Report" subtitle="Revenue overview and restock management">
+      {/* KPIs */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <StatCard label="Total Revenue" value={`₹${totalRevenue.toLocaleString()}`} icon={TrendingUp} color="primary" />
+        <StatCard label="Total Sales" value={totalSales} icon={BarChart3} color="secondary" />
+        <StatCard label="Avg Order Value" value={`₹${avgOrderValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} icon={Package} color="success" />
       </div>
 
       {/* Charts */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <h2 className="text-base font-semibold mb-4 flex items-center gap-2"><TrendingUp className="h-4 w-4 text-primary" /> Daily Revenue (Last 7 Days)</h2>
-          <ResponsiveContainer width="100%" height={220}>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="section-card">
+          <h2 className="section-title mb-4 flex items-center gap-1.5">
+            <TrendingUp className="h-3.5 w-3.5 text-primary" /> Daily Revenue (Last 7 Days)
+          </h2>
+          <ResponsiveContainer width="100%" height={200}>
             <BarChart data={dailyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 89%)" />
+              <XAxis dataKey="day" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} />
               <Tooltip formatter={(v: number) => `₹${v.toLocaleString()}`} />
-              <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="revenue" fill="hsl(222, 62%, 32%)" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <h2 className="text-base font-semibold mb-4">Revenue by Category</h2>
-          <ResponsiveContainer width="100%" height={220}>
+        <div className="section-card">
+          <h2 className="section-title mb-4">Revenue by Category</h2>
+          <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={categoryData} cx="50%" cy="50%" innerRadius={45} outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
+              <Pie data={categoryData} cx="50%" cy="50%" innerRadius={40} outerRadius={72} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false} fontSize={10}>
                 {categoryData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
               </Pie>
               <Tooltip formatter={(v: number) => `₹${v.toLocaleString()}`} />
@@ -125,33 +110,29 @@ const SalesReport = () => {
       </div>
 
       {/* Top Sellers */}
-      <div className="rounded-xl border bg-card p-5 shadow-sm">
-        <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
-          <Crown className="h-4 w-4 text-yellow-500" /> Top Sales People
+      <div className="section-card">
+        <h2 className="section-title mb-4 flex items-center gap-1.5">
+          <Crown className="h-3.5 w-3.5 text-warning" /> Top Sales People
         </h2>
         {topSellers.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">No sales data yet</p>
+          <EmptyState title="No sales data yet" />
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {topSellers.map((seller, i) => {
               const RankIcon = RANK_ICONS[i] || Medal;
               const share = totalRevenue > 0 ? ((seller.revenue / totalRevenue) * 100).toFixed(1) : "0";
               return (
                 <div
                   key={seller.id}
-                  className={`flex items-center justify-between rounded-lg border px-4 py-3 transition-colors ${i === 0 ? "bg-yellow-500/5 border-yellow-500/20" : "hover:bg-muted/30"}`}
+                  className={`flex items-center justify-between rounded-md border px-3 py-2.5 transition-colors ${i === 0 ? "bg-warning/5 border-warning/15" : "hover:bg-muted/40"}`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                      {i < 3 ? (
-                        <RankIcon className={`h-4 w-4 ${RANK_COLORS[i]}`} />
-                      ) : (
-                        <span className="text-xs font-bold text-muted-foreground">#{i + 1}</span>
-                      )}
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted shrink-0">
+                      {i < 3 ? <RankIcon className={`h-3.5 w-3.5 ${RANK_COLORS[i]}`} /> : <span className="text-[10px] font-bold text-muted-foreground">#{i + 1}</span>}
                     </div>
                     <div>
                       <p className="text-sm font-medium">{seller.name}</p>
-                      <p className="text-xs text-muted-foreground">{seller.count} sales • {share}% of total</p>
+                      <p className="text-xs text-muted-foreground">{seller.count} sales &middot; {share}% of total</p>
                     </div>
                   </div>
                   <p className="text-sm font-bold text-primary">₹{seller.revenue.toLocaleString()}</p>
@@ -162,79 +143,84 @@ const SalesReport = () => {
         )}
       </div>
 
-      <div className="rounded-xl border bg-card p-5 shadow-sm">
-        <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 text-destructive" /> Low Stock / Out of Stock — Reorder
+      {/* Low Stock */}
+      <div className="section-card">
+        <h2 className="section-title mb-4 flex items-center gap-1.5">
+          <AlertTriangle className="h-3.5 w-3.5 text-destructive" /> Low Stock / Out of Stock
         </h2>
         {!lowStock?.length ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">All products are well-stocked 🎉</p>
+          <EmptyState icon={Package} title="All products are well-stocked" />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Product</TableHead>
-                <TableHead>SKU</TableHead>
-                <TableHead className="text-right">Current Stock</TableHead>
-                <TableHead className="text-right">Reorder Point</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {lowStock.map(p => (
-                <TableRow key={p.id}>
-                  <TableCell className="font-medium">{p.name}</TableCell>
-                  <TableCell className="font-mono text-xs">{p.sku}</TableCell>
-                  <TableCell className="text-right">{p.quantity}</TableCell>
-                  <TableCell className="text-right">{p.reorder_point}</TableCell>
-                  <TableCell>
-                    <Badge variant={p.quantity === 0 ? "destructive" : "secondary"}>
-                      {p.quantity === 0 ? "Out of Stock" : "Low Stock"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Button size="sm" variant="outline" className="gap-1" onClick={() => handleReorder(p.id, p.name)} disabled={createReorder.isPending}>
-                      <Send className="h-3 w-3" /> Reorder
-                    </Button>
-                  </TableCell>
+          <div className="data-table-wrapper">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product</TableHead>
+                  <TableHead>SKU</TableHead>
+                  <TableHead className="text-right">Current</TableHead>
+                  <TableHead className="text-right">Reorder Pt</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {lowStock.map(p => (
+                  <TableRow key={p.id} className="hover:bg-muted/40">
+                    <TableCell className="font-medium">{p.name}</TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground">{p.sku}</TableCell>
+                    <TableCell className="text-right tabular-nums">{p.quantity}</TableCell>
+                    <TableCell className="text-right tabular-nums">{p.reorder_point}</TableCell>
+                    <TableCell>
+                      <Badge variant={p.quantity === 0 ? "destructive" : "secondary"} className="text-[10px]">
+                        {p.quantity === 0 ? "Out of Stock" : "Low Stock"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => handleReorder(p.id, p.name)} disabled={createReorder.isPending}>
+                        <Send className="h-3 w-3" /> Reorder
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </div>
 
       {/* Reorder Requests */}
       {reorderRequests && reorderRequests.length > 0 && (
-        <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
-            <Package className="h-4 w-4 text-secondary" /> Recent Reorder Requests
+        <div className="section-card">
+          <h2 className="section-title mb-4 flex items-center gap-1.5">
+            <Package className="h-3.5 w-3.5 text-secondary" /> Recent Reorder Requests
           </h2>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Product</TableHead>
-                <TableHead className="text-right">Qty Requested</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Notes</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {reorderRequests.map((r: any) => (
-                <TableRow key={r.id}>
-                  <TableCell className="text-sm">{new Date(r.created_at).toLocaleDateString()}</TableCell>
-                  <TableCell className="font-medium">{r.products?.name}</TableCell>
-                  <TableCell className="text-right">{r.requested_quantity}</TableCell>
-                  <TableCell><Badge variant={r.status === "pending" ? "secondary" : "default"}>{r.status}</Badge></TableCell>
-                  <TableCell className="text-muted-foreground text-sm">{r.notes}</TableCell>
+          <div className="data-table-wrapper">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Product</TableHead>
+                  <TableHead className="text-right">Qty</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Notes</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {reorderRequests.map((r: any) => (
+                  <TableRow key={r.id} className="hover:bg-muted/40">
+                    <TableCell className="text-sm whitespace-nowrap">{new Date(r.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell className="font-medium">{r.products?.name}</TableCell>
+                    <TableCell className="text-right tabular-nums">{r.requested_quantity}</TableCell>
+                    <TableCell><Badge variant={r.status === "pending" ? "secondary" : "default"} className="text-[10px]">{r.status}</Badge></TableCell>
+                    <TableCell className="text-muted-foreground text-sm max-w-xs truncate">{r.notes}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
-    </motion.div>
+    </PageShell>
   );
 };
 
