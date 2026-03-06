@@ -34,6 +34,8 @@ const statusColor = (status: string) => {
 const ActivityLog = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [auditorFilter, setAuditorFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
 
   const { data: logs, isLoading } = useQuery({
     queryKey: ["activity_logs"],
@@ -48,8 +50,15 @@ const ActivityLog = () => {
     },
   });
 
+  const auditors = useMemo(() => {
+    if (!logs) return [];
+    const names = [...new Set(logs.map(l => l.profiles?.full_name).filter(Boolean))] as string[];
+    return names.sort();
+  }, [logs]);
+
   const filtered = useMemo(() => {
     if (!logs) return [];
+    const now = new Date();
     return logs.filter((log) => {
       const matchesSearch =
         !search ||
@@ -58,9 +67,16 @@ const ActivityLog = () => {
         log.assets?.asset_id?.toLowerCase().includes(search.toLowerCase()) ||
         log.notes?.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = statusFilter === "all" || log.new_status === statusFilter;
-      return matchesSearch && matchesStatus;
+      const matchesAuditor = auditorFilter === "all" || log.profiles?.full_name === auditorFilter;
+      let matchesDate = true;
+      if (dateFilter !== "all") {
+        const logDate = new Date(log.created_at);
+        const days = dateFilter === "7d" ? 7 : dateFilter === "30d" ? 30 : 90;
+        matchesDate = (now.getTime() - logDate.getTime()) / 86400000 <= days;
+      }
+      return matchesSearch && matchesStatus && matchesAuditor && matchesDate;
     });
-  }, [logs, search, statusFilter]);
+  }, [logs, search, statusFilter, auditorFilter, dateFilter]);
 
   return (
     <PageShell
