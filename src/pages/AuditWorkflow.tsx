@@ -162,6 +162,8 @@ const AuditWorkflow = () => {
                         </span>
                         {a.last_audit_date ? <span> · {a.last_audit_date}</span> : null}
                       </p>
+                    ) : null}
+                  </div>
                   <div className="flex items-center gap-2 ml-2">
                     <span className="text-xs font-mono text-muted-foreground">{a.asset_id}</span>
                     {canEdit && (
