@@ -17,6 +17,7 @@ import Products from "@/pages/Products";
 import StockCheck from "@/pages/StockCheck";
 import Sales from "@/pages/Sales";
 import SalesReport from "@/pages/SalesReport";
+import ActivityLog from "@/pages/ActivityLog";
 import Login from "@/pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -62,6 +63,7 @@ const App = () => (
               <Route path="/audit/scan" element={<AuditScan />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/reorder" element={<Reorder />} />
+              <Route path="/activity-log" element={<ActivityLog />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
