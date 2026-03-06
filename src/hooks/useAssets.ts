@@ -27,9 +27,20 @@ export const useAssets = () => {
   return useQuery({
     queryKey: ["assets"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("assets").select("*").order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as DbAsset[];
+      const { data, error } = await supabase
+        .from("assets")
+        .select("*, auditor_profile:profiles!assets_last_audited_by_fkey(full_name)")
+        .order("created_at", { ascending: false });
+      if (error) {
+        // Fallback without join if FK doesn't exist
+        const { data: fallback, error: fallbackError } = await supabase
+          .from("assets")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (fallbackError) throw fallbackError;
+        return (fallback as any[]).map(a => ({ ...a, auditor_profile: null })) as (DbAsset & { auditor_profile: { full_name: string } | null })[];
+      }
+      return data as unknown as (DbAsset & { auditor_profile: { full_name: string } | null })[];
     },
   });
 };
