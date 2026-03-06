@@ -1,3 +1,4 @@
+import SalesDashboard from "@/pages/SalesDashboard";
 import { Package, Monitor, CheckCircle2, AlertTriangle, Clock, MapPin, Activity, TrendingUp } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import { CATEGORIES } from "@/data/assets";
@@ -32,6 +33,10 @@ const Dashboard = () => {
   const { data: assets, isLoading } = useAssets();
   const { data: logs } = useAuditLogs();
   const { profile, role } = useAuth();
+
+  if (role === "sales") {
+    return <SalesDashboard />;
+  }
 
   const displayAssets = assets && assets.length > 0 ? assets : sampleAssets.map(a => ({
     ...a, asset_id: a.assetId, serial_number: a.serialNumber, purchase_date: a.purchaseDate,
