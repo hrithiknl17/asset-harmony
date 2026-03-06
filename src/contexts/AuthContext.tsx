@@ -18,10 +18,11 @@ interface AuthContextType {
 }
 
 const DUMMY_USERS = [
-  { email: "admin@assettrack.com", password: "admin123", id: "adm-001", name: "Dev Admin", role: "admin" as AppRole },
-  { email: "manager@assettrack.com", password: "manager123", id: "mgr-001", name: "Hrithik (Manager)", role: "manager" as AppRole },
-  { email: "auditor@assettrack.com", password: "auditor123", id: "aud-001", name: "Lakkanna (Auditor)", role: "auditor" as AppRole },
-  { email: "sales@assettrack.com", password: "sales123", id: "sal-001", name: "Priya (Sales)", role: "sales" as AppRole },
+  { email: "admin@assettrack.com", password: "admin123", id: "a0000000-0000-0000-0000-000000000001", name: "Dev Admin", role: "admin" as AppRole },
+  { email: "manager@assettrack.com", password: "manager123", id: "b0000000-0000-0000-0000-000000000001", name: "Hrithik (Manager)", role: "manager" as AppRole },
+  { email: "auditor@assettrack.com", password: "auditor123", id: "c0000000-0000-0000-0000-000000000001", name: "Lakkanna (Auditor)", role: "auditor" as AppRole },
+  { email: "sales@assettrack.com", password: "sales123", id: "d0000000-0000-0000-0000-000000000001", name: "Priya (Sales)", role: "sales" as AppRole },
+  { email: "sales2@assettrack.com", password: "sales123", id: "d0000000-0000-0000-0000-000000000002", name: "Ravi (Sales)", role: "sales" as AppRole },
 ];
 
 const defaultValue: AuthContextType = {

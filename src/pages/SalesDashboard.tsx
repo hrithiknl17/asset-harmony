@@ -8,10 +8,10 @@ import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const SALES_PEOPLE: Record<string, string> = {
-  "sal-001": "Priya (Sales)",
-  "sal-002": "Ravi (Sales)",
-  "adm-001": "Dev Admin",
-  "mgr-001": "Hrithik (Manager)",
+  "d0000000-0000-0000-0000-000000000001": "Priya (Sales)",
+  "d0000000-0000-0000-0000-000000000002": "Ravi (Sales)",
+  "a0000000-0000-0000-0000-000000000001": "Dev Admin",
+  "b0000000-0000-0000-0000-000000000001": "Hrithik (Manager)",
 };
 
 const container = {
