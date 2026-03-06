@@ -29,18 +29,34 @@ export const useAssets = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("assets")
-        .select("*, auditor_profile:profiles!assets_last_audited_by_fkey(full_name)")
+        .select("*")
         .order("created_at", { ascending: false });
-      if (error) {
-        // Fallback without join if FK doesn't exist
-        const { data: fallback, error: fallbackError } = await supabase
-          .from("assets")
-          .select("*")
-          .order("created_at", { ascending: false });
-        if (fallbackError) throw fallbackError;
-        return (fallback as any[]).map(a => ({ ...a, auditor_profile: null })) as (DbAsset & { auditor_profile: { full_name: string } | null })[];
+      if (error) throw error;
+
+      // Get unique auditor IDs and fetch their names from profiles
+      const auditorIds = [...new Set(
+        (data as DbAsset[])
+          .map(a => a.last_audited_by)
+          .filter(Boolean) as string[]
+      )];
+
+      let profileMap: Record<string, string> = {};
+      if (auditorIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .in("id", auditorIds);
+        if (profiles) {
+          profileMap = Object.fromEntries(profiles.map(p => [p.id, p.full_name]));
+        }
       }
-      return data as unknown as (DbAsset & { auditor_profile: { full_name: string } | null })[];
+
+      return (data as DbAsset[]).map(a => ({
+        ...a,
+        auditor_profile: a.last_audited_by && profileMap[a.last_audited_by]
+          ? { full_name: profileMap[a.last_audited_by] }
+          : null,
+      })) as (DbAsset & { auditor_profile: { full_name: string } | null })[];
     },
   });
 };
