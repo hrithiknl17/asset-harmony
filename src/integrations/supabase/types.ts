@@ -125,6 +125,51 @@ export type Database = {
           },
         ]
       }
+      products: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          location: string
+          name: string
+          price: number
+          quantity: number
+          reorder_point: number
+          sku: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          location?: string
+          name: string
+          price?: number
+          quantity?: number
+          reorder_point?: number
+          sku: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          location?: string
+          name?: string
+          price?: number
+          quantity?: number
+          reorder_point?: number
+          sku?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -145,6 +190,91 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      reorder_requests: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string
+          product_id: string
+          requested_by: string
+          requested_quantity: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string
+          product_id: string
+          requested_by: string
+          requested_quantity: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string
+          product_id?: string
+          requested_by?: string
+          requested_quantity?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reorder_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales: {
+        Row: {
+          created_at: string
+          customer_name: string
+          id: string
+          notes: string
+          product_id: string
+          quantity: number
+          sold_by: string
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          customer_name?: string
+          id?: string
+          notes?: string
+          product_id: string
+          quantity: number
+          sold_by: string
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string
+          id?: string
+          notes?: string
+          product_id?: string
+          quantity?: number
+          sold_by?: string
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -178,7 +308,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "manager" | "auditor"
+      app_role: "manager" | "auditor" | "admin" | "sales"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -306,7 +436,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["manager", "auditor"],
+      app_role: ["manager", "auditor", "admin", "sales"],
     },
   },
 } as const

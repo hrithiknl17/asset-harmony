@@ -124,17 +124,27 @@ const Login = () => {
           transition={{ delay: 0.6 }}
           className="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30 p-3 space-y-1"
         >
-          <p className="text-xs font-medium text-muted-foreground text-center">Demo Credentials</p>
+          <p className="text-xs font-medium text-muted-foreground text-center mb-2">Demo Credentials</p>
           <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+            <div className="space-y-0.5">
+              <p className="font-semibold text-foreground/70">Admin</p>
+              <p>admin@assettrack.com</p>
+              <p>admin123</p>
+            </div>
             <div className="space-y-0.5">
               <p className="font-semibold text-foreground/70">Manager</p>
               <p>manager@assettrack.com</p>
               <p>manager123</p>
             </div>
-            <div className="space-y-0.5">
+            <div className="space-y-0.5 mt-1">
               <p className="font-semibold text-foreground/70">Auditor</p>
               <p>auditor@assettrack.com</p>
               <p>auditor123</p>
+            </div>
+            <div className="space-y-0.5 mt-1">
+              <p className="font-semibold text-foreground/70">Sales</p>
+              <p>sales@assettrack.com</p>
+              <p>sales123</p>
             </div>
           </div>
         </motion.div>
