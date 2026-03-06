@@ -2,61 +2,75 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap');
-
 @layer base {
   :root {
-    --background: 220 16% 96%;
-    --foreground: 222 30% 12%;
+    /* ── Surface system ── */
+    --background: 220 14% 96%;
+    --foreground: 215 28% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 30% 12%;
+    --card-foreground: 215 28% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 30% 12%;
+    --popover-foreground: 215 28% 10%;
 
-    --primary: 222 62% 32%;
+    /* ── Brand accent: cobalt ── */
+    --primary: 215 72% 44%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 170 45% 42%;
+    /* ── Secondary: teal ── */
+    --secondary: 174 52% 40%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 14% 92%;
-    --muted-foreground: 220 10% 44%;
+    /* ── Neutral tones ── */
+    --muted: 218 14% 92%;
+    --muted-foreground: 215 12% 48%;
 
-    --accent: 222 62% 32%;
+    --accent: 215 72% 44%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 68% 48%;
+    /* ── Semantic status ── */
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 52% 38%;
+    --success: 160 60% 36%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 88% 48%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 36 92% 50%;
+    --warning-foreground: 30 80% 10%;
 
-    --info: 210 58% 48%;
+    --info: 210 68% 50%;
     --info-foreground: 0 0% 100%;
 
-    --border: 220 14% 89%;
-    --input: 220 14% 89%;
-    --ring: 222 62% 32%;
+    /* ── Borders & inputs ── */
+    --border: 216 12% 88%;
+    --input: 216 12% 88%;
+    --ring: 215 72% 44%;
 
-    --radius: 0.5rem;
+    --radius: 0.625rem;
 
-    --sidebar-background: 222 44% 14%;
-    --sidebar-foreground: 220 14% 86%;
-    --sidebar-primary: 170 50% 50%;
+    /* ── Sidebar: dark steel ── */
+    --sidebar-background: 218 30% 10%;
+    --sidebar-foreground: 216 14% 78%;
+    --sidebar-primary: 174 52% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 36% 22%;
-    --sidebar-accent-foreground: 220 14% 94%;
-    --sidebar-border: 222 30% 22%;
-    --sidebar-ring: 170 50% 50%;
+    --sidebar-accent: 218 24% 16%;
+    --sidebar-accent-foreground: 216 14% 94%;
+    --sidebar-border: 218 20% 16%;
+    --sidebar-ring: 174 52% 50%;
 
-    /* Surface tokens */
+    /* ── Extended surface tokens ── */
     --surface: 0 0% 100%;
-    --surface-muted: 220 14% 96%;
+    --surface-raised: 220 14% 98%;
+    --surface-muted: 218 14% 95%;
+
+    /* ── Chart palette ── */
+    --chart-1: 215 72% 44%;
+    --chart-2: 174 52% 40%;
+    --chart-3: 36 92% 50%;
+    --chart-4: 0 72% 51%;
+    --chart-5: 280 52% 48%;
+    --chart-6: 200 70% 50%;
   }
 }
 
@@ -66,10 +80,43 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
+/* ── Typography scale ── */
+@layer components {
+  .text-display {
+    @apply text-2xl font-extrabold tracking-tight sm:text-3xl;
+    font-family: 'Manrope', sans-serif;
+  }
+  .text-headline {
+    @apply text-lg font-bold tracking-tight sm:text-xl;
+    font-family: 'Manrope', sans-serif;
+  }
+  .text-title {
+    @apply text-sm font-semibold tracking-tight;
+  }
+  .text-body {
+    @apply text-sm leading-relaxed;
+  }
+  .text-caption {
+    @apply text-xs text-muted-foreground;
+  }
+  .text-mono {
+    @apply text-xs;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .text-metric {
+    @apply text-2xl font-extrabold tracking-tight tabular-nums;
+    font-family: 'Manrope', sans-serif;
+  }
+}
+
+/* ── Layout primitives ── */
 @layer components {
   .page-shell {
     @apply space-y-6;
@@ -78,42 +125,46 @@
     @apply flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between;
   }
   .page-title {
-    @apply text-xl font-bold tracking-tight sm:text-2xl;
+    @apply text-headline flex items-center gap-2;
   }
   .page-subtitle {
-    @apply text-sm text-muted-foreground;
+    @apply text-caption mt-0.5;
   }
   .section-card {
-    @apply rounded-lg border bg-card p-5 shadow-sm;
+    @apply rounded-xl border bg-card p-5 shadow-sm;
   }
   .section-title {
-    @apply text-sm font-semibold tracking-tight;
+    @apply text-title flex items-center gap-1.5;
   }
   .stat-card {
-    @apply rounded-lg border bg-card p-4 shadow-sm transition-shadow hover:shadow-md;
+    @apply rounded-xl border bg-card p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
   }
   .data-table-wrapper {
-    @apply rounded-lg border bg-card shadow-sm overflow-hidden;
+    @apply rounded-xl border bg-card shadow-sm overflow-hidden;
   }
   .filter-bar {
     @apply flex flex-wrap items-center gap-2;
   }
 }
 
-/* Improved table styles */
+/* ── Table enhancements ── */
 @layer utilities {
   .table-sticky-header thead {
     position: sticky;
     top: 0;
     z-index: 10;
     background: hsl(var(--card));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+  .table-sticky-header thead th {
+    @apply text-xs font-semibold uppercase tracking-wider text-muted-foreground;
   }
   .table-zebra tbody tr:nth-child(even) {
-    background: hsl(var(--muted) / 0.3);
+    background: hsl(var(--muted) / 0.25);
   }
 }
 
-/* Smooth scrollbars */
+/* ── Scrollbar ── */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -122,15 +173,26 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.18);
-  border-radius: 3px;
+  background: hsl(var(--muted-foreground) / 0.15);
+  border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.3);
+  background: hsl(var(--muted-foreground) / 0.28);
 }
 
-/* Focus visible */
+/* ── Focus ── */
 :focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Gradient utility for hero sections ── */
+@layer utilities {
+  .gradient-mesh {
+    background: 
+      radial-gradient(ellipse at 20% 50%, hsl(var(--primary) / 0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, hsl(var(--secondary) / 0.04) 0%, transparent 60%),
+      hsl(var(--background));
+  }
 }

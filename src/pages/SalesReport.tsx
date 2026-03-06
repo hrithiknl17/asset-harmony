@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { BarChart3, AlertTriangle, TrendingUp, Package, Send, Crown, Medal, Award } from "lucide-react";
 import PageShell from "@/components/PageShell";
+import SectionCard from "@/components/SectionCard";
 import EmptyState from "@/components/EmptyState";
-import StatCard from "@/components/StatCard";
+import MetricCard from "@/components/MetricCard";
 import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
-const COLORS = ["hsl(222, 62%, 32%)", "hsl(170, 45%, 42%)", "hsl(38, 88%, 48%)", "hsl(0, 68%, 48%)", "hsl(270, 55%, 48%)"];
+const COLORS = ["hsl(215, 72%, 44%)", "hsl(174, 52%, 40%)", "hsl(36, 92%, 50%)", "hsl(0, 72%, 51%)", "hsl(280, 52%, 48%)"];
 
 const SALES_PEOPLE: Record<string, string> = {
   "d0000000-0000-0000-0000-000000000001": "Priya (Sales)",
@@ -20,6 +21,16 @@ const SALES_PEOPLE: Record<string, string> = {
 
 const RANK_ICONS = [Crown, Medal, Award];
 const RANK_COLORS = ["text-warning", "text-muted-foreground", "text-warning"];
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-lg border bg-card px-3 py-2 shadow-elevated text-xs">
+      <p className="font-semibold">{label || payload[0].name}</p>
+      <p className="text-primary font-bold">{Number(payload[0].value).toLocaleString()}</p>
+    </div>
+  );
+};
 
 const SalesReport = () => {
   const { data: sales } = useSales();
@@ -72,48 +83,41 @@ const SalesReport = () => {
   };
 
   return (
-    <PageShell icon={BarChart3} title="Sales Report" subtitle="Revenue overview and restock management">
+    <PageShell icon={BarChart3} title="Sales Report" subtitle="Revenue analytics and restock management">
       {/* KPIs */}
-      <div className="grid gap-3 sm:grid-cols-3">
-        <StatCard label="Total Revenue" value={`₹${totalRevenue.toLocaleString()}`} icon={TrendingUp} color="primary" />
-        <StatCard label="Total Sales" value={totalSales} icon={BarChart3} color="secondary" />
-        <StatCard label="Avg Order Value" value={`₹${avgOrderValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} icon={Package} color="success" />
+      <div className="grid gap-4 sm:grid-cols-3">
+        <MetricCard label="Total Revenue" value={totalRevenue.toLocaleString()} icon={TrendingUp} color="primary" trendDirection="up" trend="All time" />
+        <MetricCard label="Total Sales" value={totalSales} icon={BarChart3} color="secondary" trend={`${topSellers.length} sales people`} />
+        <MetricCard label="Avg Order Value" value={avgOrderValue.toLocaleString(undefined, { maximumFractionDigits: 0 })} icon={Package} color="success" />
       </div>
 
       {/* Charts */}
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="section-card">
-          <h2 className="section-title mb-4 flex items-center gap-1.5">
-            <TrendingUp className="h-3.5 w-3.5 text-primary" /> Daily Revenue (Last 7 Days)
-          </h2>
-          <ResponsiveContainer width="100%" height={200}>
+        <SectionCard title="Daily Revenue (7 days)" icon={TrendingUp}>
+          <ResponsiveContainer width="100%" height={220}>
             <BarChart data={dailyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 89%)" />
-              <XAxis dataKey="day" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip formatter={(v: number) => `₹${v.toLocaleString()}`} />
-              <Bar dataKey="revenue" fill="hsl(222, 62%, 32%)" radius={[3, 3, 0, 0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(216, 12%, 88%)" />
+              <XAxis dataKey="day" tick={{ fontSize: 10, fill: "hsl(215, 12%, 48%)" }} />
+              <YAxis tick={{ fontSize: 10, fill: "hsl(215, 12%, 48%)" }} />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar dataKey="revenue" fill="hsl(215, 72%, 44%)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </div>
-        <div className="section-card">
-          <h2 className="section-title mb-4">Revenue by Category</h2>
-          <ResponsiveContainer width="100%" height={200}>
+        </SectionCard>
+        <SectionCard title="Revenue by Category">
+          <ResponsiveContainer width="100%" height={220}>
             <PieChart>
-              <Pie data={categoryData} cx="50%" cy="50%" innerRadius={40} outerRadius={72} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false} fontSize={10}>
+              <Pie data={categoryData} cx="50%" cy="50%" innerRadius={45} outerRadius={78} dataKey="value" paddingAngle={2} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false} fontSize={10}>
                 {categoryData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
               </Pie>
-              <Tooltip formatter={(v: number) => `₹${v.toLocaleString()}`} />
+              <Tooltip content={<CustomTooltip />} />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </SectionCard>
       </div>
 
       {/* Top Sellers */}
-      <div className="section-card">
-        <h2 className="section-title mb-4 flex items-center gap-1.5">
-          <Crown className="h-3.5 w-3.5 text-warning" /> Top Sales People
-        </h2>
+      <SectionCard title="Top Sales People" icon={Crown} iconColor="text-warning">
         {topSellers.length === 0 ? (
           <EmptyState title="No sales data yet" />
         ) : (
@@ -124,59 +128,56 @@ const SalesReport = () => {
               return (
                 <div
                   key={seller.id}
-                  className={`flex items-center justify-between rounded-md border px-3 py-2.5 transition-colors ${i === 0 ? "bg-warning/5 border-warning/15" : "hover:bg-muted/40"}`}
+                  className={`flex items-center justify-between rounded-lg border px-4 py-3 transition-colors ${i === 0 ? "bg-warning/5 border-warning/15" : "hover:bg-muted/30"}`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted shrink-0">
-                      {i < 3 ? <RankIcon className={`h-3.5 w-3.5 ${RANK_COLORS[i]}`} /> : <span className="text-[10px] font-bold text-muted-foreground">#{i + 1}</span>}
+                  <div className="flex items-center gap-3">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-full shrink-0 ${i === 0 ? "bg-warning/15" : "bg-muted"}`}>
+                      {i < 3 ? <RankIcon className={`h-4 w-4 ${RANK_COLORS[i]}`} /> : <span className="text-[10px] font-bold text-muted-foreground">#{i + 1}</span>}
                     </div>
                     <div>
-                      <p className="text-sm font-medium">{seller.name}</p>
-                      <p className="text-xs text-muted-foreground">{seller.count} sales &middot; {share}% of total</p>
+                      <p className="text-sm font-semibold">{seller.name}</p>
+                      <p className="text-xs text-muted-foreground font-medium">{seller.count} sales · {share}% share</p>
                     </div>
                   </div>
-                  <p className="text-sm font-bold text-primary">₹{seller.revenue.toLocaleString()}</p>
+                  <p className="text-sm font-extrabold text-primary tabular-nums">{seller.revenue.toLocaleString()}</p>
                 </div>
               );
             })}
           </div>
         )}
-      </div>
+      </SectionCard>
 
       {/* Low Stock */}
-      <div className="section-card">
-        <h2 className="section-title mb-4 flex items-center gap-1.5">
-          <AlertTriangle className="h-3.5 w-3.5 text-destructive" /> Low Stock / Out of Stock
-        </h2>
+      <SectionCard title="Low Stock Alert" icon={AlertTriangle} iconColor="text-destructive" noPadding>
         {!lowStock?.length ? (
           <EmptyState icon={Package} title="All products are well-stocked" />
         ) : (
-          <div className="data-table-wrapper">
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Product</TableHead>
+                  <TableHead className="pl-5">Product</TableHead>
                   <TableHead>SKU</TableHead>
                   <TableHead className="text-right">Current</TableHead>
                   <TableHead className="text-right">Reorder Pt</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead></TableHead>
+                  <TableHead className="pr-5"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {lowStock.map(p => (
-                  <TableRow key={p.id} className="hover:bg-muted/40">
-                    <TableCell className="font-medium">{p.name}</TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">{p.sku}</TableCell>
-                    <TableCell className="text-right tabular-nums">{p.quantity}</TableCell>
-                    <TableCell className="text-right tabular-nums">{p.reorder_point}</TableCell>
+                  <TableRow key={p.id} className="hover:bg-muted/30">
+                    <TableCell className="pl-5 font-semibold">{p.name}</TableCell>
+                    <TableCell className="text-mono text-muted-foreground">{p.sku}</TableCell>
+                    <TableCell className="text-right tabular-nums font-bold">{p.quantity}</TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">{p.reorder_point}</TableCell>
                     <TableCell>
-                      <Badge variant={p.quantity === 0 ? "destructive" : "secondary"} className="text-[10px]">
+                      <Badge variant={p.quantity === 0 ? "destructive" : "secondary"} className="text-[10px] font-semibold">
                         {p.quantity === 0 ? "Out of Stock" : "Low Stock"}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => handleReorder(p.id, p.name)} disabled={createReorder.isPending}>
+                    <TableCell className="pr-5">
+                      <Button size="sm" variant="outline" className="gap-1 h-7 text-xs font-semibold" onClick={() => handleReorder(p.id, p.name)} disabled={createReorder.isPending}>
                         <Send className="h-3 w-3" /> Reorder
                       </Button>
                     </TableCell>
@@ -186,39 +187,36 @@ const SalesReport = () => {
             </Table>
           </div>
         )}
-      </div>
+      </SectionCard>
 
       {/* Reorder Requests */}
       {reorderRequests && reorderRequests.length > 0 && (
-        <div className="section-card">
-          <h2 className="section-title mb-4 flex items-center gap-1.5">
-            <Package className="h-3.5 w-3.5 text-secondary" /> Recent Reorder Requests
-          </h2>
-          <div className="data-table-wrapper">
+        <SectionCard title="Recent Reorder Requests" icon={Package} iconColor="text-secondary" noPadding>
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
+                  <TableHead className="pl-5">Date</TableHead>
                   <TableHead>Product</TableHead>
                   <TableHead className="text-right">Qty</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Notes</TableHead>
+                  <TableHead className="pr-5">Notes</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {reorderRequests.map((r: any) => (
-                  <TableRow key={r.id} className="hover:bg-muted/40">
-                    <TableCell className="text-sm whitespace-nowrap">{new Date(r.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell className="font-medium">{r.products?.name}</TableCell>
-                    <TableCell className="text-right tabular-nums">{r.requested_quantity}</TableCell>
-                    <TableCell><Badge variant={r.status === "pending" ? "secondary" : "default"} className="text-[10px]">{r.status}</Badge></TableCell>
-                    <TableCell className="text-muted-foreground text-sm max-w-xs truncate">{r.notes}</TableCell>
+                  <TableRow key={r.id} className="hover:bg-muted/30">
+                    <TableCell className="pl-5 text-sm whitespace-nowrap font-medium">{new Date(r.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell className="font-semibold">{r.products?.name}</TableCell>
+                    <TableCell className="text-right tabular-nums font-bold">{r.requested_quantity}</TableCell>
+                    <TableCell><Badge variant={r.status === "pending" ? "secondary" : "default"} className="text-[10px] font-semibold capitalize">{r.status}</Badge></TableCell>
+                    <TableCell className="pr-5 text-muted-foreground text-sm max-w-xs truncate">{r.notes}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </div>
-        </div>
+        </SectionCard>
       )}
     </PageShell>
   );

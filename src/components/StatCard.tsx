@@ -17,15 +17,17 @@ const colorMap = {
 };
 
 const StatCard = ({ label, value, icon: Icon, trend, color = "primary" }: StatCardProps) => (
-  <div className="stat-card">
-    <div className="flex items-center justify-between">
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
-      <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${colorMap[color]}`}>
-        <Icon className="h-4 w-4" />
+  <div className="stat-card group">
+    <div className="flex items-start justify-between">
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className="text-metric">{value}</p>
+      </div>
+      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${colorMap[color]} transition-transform group-hover:scale-110`}>
+        <Icon className="h-5 w-5" />
       </div>
     </div>
-    <p className="mt-2 text-2xl font-bold tracking-tight">{value}</p>
-    {trend && <p className="mt-1 text-xs text-muted-foreground">{trend}</p>}
+    {trend && <p className="mt-2 text-xs font-medium text-muted-foreground">{trend}</p>}
   </div>
 );
 
