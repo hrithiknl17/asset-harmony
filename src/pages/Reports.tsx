@@ -1,27 +1,13 @@
-import { useState } from "react";
 import { sampleAssets, CATEGORIES } from "@/data/assets";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Download, Printer } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAssets } from "@/hooks/useAssets";
 
 const COLORS = ["hsl(210,60%,28%)", "hsl(174,55%,42%)", "hsl(38,92%,50%)", "hsl(0,72%,51%)", "hsl(142,60%,40%)", "hsl(270,50%,50%)", "hsl(200,70%,50%)", "hsl(330,60%,50%)"];
-
-const exportReport = (type: string) => {
-  const headers = ["Asset ID", "Name", "Category", "Location", "Condition", "Audit Status", "Last Audit Date"];
-  const rows = sampleAssets.map(a => [a.assetId, a.name, a.category, a.location, a.condition, a.auditStatus, a.lastAuditDate]);
-  const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${type}-report-${new Date().toISOString().split("T")[0]}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-  toast.success(`${type} report exported!`);
-};
 
 const item = {
   hidden: { opacity: 0, y: 15 },
@@ -29,31 +15,62 @@ const item = {
 };
 
 const Reports = () => {
+  const { data: dbAssets } = useAssets();
+
+  // Use DB assets, fallback to sample data
+  const assets = dbAssets && dbAssets.length > 0
+    ? dbAssets.map(a => ({
+        id: a.id,
+        assetId: a.asset_id,
+        name: a.name,
+        category: a.category,
+        location: a.location,
+        building: a.building,
+        condition: a.condition,
+        auditStatus: a.audit_status,
+        lastAuditDate: a.last_audit_date || "",
+      }))
+    : sampleAssets;
+
+  const exportReport = (type: string) => {
+    const headers = ["Asset ID", "Name", "Category", "Location", "Condition", "Audit Status", "Last Audit Date"];
+    const rows = assets.map(a => [a.assetId, a.name, a.category, a.location, a.condition, a.auditStatus, a.lastAuditDate]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${type}-report-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`${type} report exported!`);
+  };
+
   const byCategory = CATEGORIES.map(cat => ({
     name: cat.replace("Equipment", "Eq.").replace("Decorations", "Decor.").replace("Entertainment", "Ent."),
-    count: sampleAssets.filter(a => a.category === cat).length,
+    count: assets.filter(a => a.category === cat).length,
   })).filter(c => c.count > 0);
 
   const byCondition = ["New", "Good", "Fair", "Poor"].map(c => ({
     name: c,
-    value: sampleAssets.filter(a => a.condition === c).length,
+    value: assets.filter(a => a.condition === c).length,
   })).filter(c => c.value > 0);
 
   const byStatus = [
-    { name: "Verified", value: sampleAssets.filter(a => a.auditStatus === "Verified").length },
-    { name: "Pending", value: sampleAssets.filter(a => a.auditStatus === "Pending").length },
-    { name: "Discrepancy", value: sampleAssets.filter(a => a.auditStatus === "Discrepancy").length },
+    { name: "Verified", value: assets.filter(a => a.auditStatus === "Verified").length },
+    { name: "Pending", value: assets.filter(a => a.auditStatus === "Pending").length },
+    { name: "Discrepancy", value: assets.filter(a => a.auditStatus === "Discrepancy").length },
   ];
 
-  const byBuilding = [...new Set(sampleAssets.map(a => a.building))].map(b => ({
+  const byBuilding = [...new Set(assets.map(a => a.building))].map(b => ({
     name: b.replace(" Building", ""),
-    assets: sampleAssets.filter(a => a.building === b).length,
-    verified: sampleAssets.filter(a => a.building === b && a.auditStatus === "Verified").length,
-    pending: sampleAssets.filter(a => a.building === b && a.auditStatus === "Pending").length,
+    assets: assets.filter(a => a.building === b).length,
+    verified: assets.filter(a => a.building === b && a.auditStatus === "Verified").length,
+    pending: assets.filter(a => a.building === b && a.auditStatus === "Pending").length,
   }));
 
-  const totalAssets = sampleAssets.length;
-  const verifiedCount = sampleAssets.filter(a => a.auditStatus === "Verified").length;
+  const totalAssets = assets.length;
+  const verifiedCount = assets.filter(a => a.auditStatus === "Verified").length;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
@@ -87,7 +104,7 @@ const Reports = () => {
           <p className="text-xs text-muted-foreground mt-1">Pending</p>
         </div>
         <div className="rounded-xl border bg-card p-4 text-center">
-          <p className="text-3xl font-bold">{Math.round((verifiedCount / totalAssets) * 100)}%</p>
+          <p className="text-3xl font-bold">{totalAssets > 0 ? Math.round((verifiedCount / totalAssets) * 100) : 0}%</p>
           <p className="text-xs text-muted-foreground mt-1">Reconciliation Rate</p>
         </div>
       </motion.div>
@@ -182,7 +199,7 @@ const Reports = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {sampleAssets.filter(a => a.auditStatus === "Discrepancy").map(a => (
+                  {assets.filter(a => a.auditStatus === "Discrepancy").map(a => (
                     <tr key={a.id} className="border-b last:border-0">
                       <td className="px-4 py-2 font-mono text-xs">{a.assetId}</td>
                       <td className="px-4 py-2">{a.name}</td>
@@ -196,9 +213,9 @@ const Reports = () => {
             <div className="mt-4 rounded bg-muted p-4">
               <h4 className="text-sm font-semibold mb-2">Variance Report Notes</h4>
               <ul className="space-y-1 text-xs text-muted-foreground">
-                <li>• {sampleAssets.filter(a => a.auditStatus === "Discrepancy").length} assets flagged with discrepancies</li>
-                <li>• {sampleAssets.filter(a => a.auditStatus === "Pending").length} assets pending re-verification</li>
-                <li>• Overall reconciliation rate: {Math.round(verifiedCount / totalAssets * 100)}%</li>
+                <li>• {assets.filter(a => a.auditStatus === "Discrepancy").length} assets flagged with discrepancies</li>
+                <li>• {assets.filter(a => a.auditStatus === "Pending").length} assets pending re-verification</li>
+                <li>• Overall reconciliation rate: {totalAssets > 0 ? Math.round(verifiedCount / totalAssets * 100) : 0}%</li>
               </ul>
             </div>
           </div>
