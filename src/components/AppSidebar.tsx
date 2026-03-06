@@ -16,7 +16,7 @@ const navItems = [
   { to: "/audit", icon: ScanSearch, label: "Audit Workflow", roles: ["admin", "manager", "auditor"], group: "Audit" },
   { to: "/audit/scan", icon: Camera, label: "Scan & Audit", roles: ["admin", "manager", "auditor"], group: "Audit" },
   { to: "/reports", icon: BarChart3, label: "Reports", roles: ["admin", "manager"], group: "Analytics" },
-  { to: "/reorder", icon: Receipt, label: "Reorder Items", roles: ["admin", "manager"], group: "Inventory" },
+  { to: "/reorder", icon: Receipt, label: "Reorder Items", roles: ["admin", "manager"], group: "Assets" },
   { to: "/activity-log", icon: ScrollText, label: "Activity Log", roles: ["admin", "manager", "auditor"], group: "Analytics" },
 ];
 
