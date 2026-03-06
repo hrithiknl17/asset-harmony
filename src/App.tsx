@@ -17,6 +17,7 @@ import Products from "@/pages/Products";
 import StockCheck from "@/pages/StockCheck";
 import Sales from "@/pages/Sales";
 import SalesReport from "@/pages/SalesReport";
+import ActivityLog from "@/pages/ActivityLog";
 import Login from "@/pages/Login";
 import NotFound from "./pages/NotFound";
 
