@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { sampleAssets, CATEGORIES, CONDITIONS, type Asset } from "@/data/assets";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -39,6 +40,7 @@ const exportCSV = (data: Asset[]) => {
 };
 
 const AssetRegister = () => {
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState<string>("all");
   const [condFilter, setCondFilter] = useState<string>("all");
@@ -46,6 +48,13 @@ const AssetRegister = () => {
   const [buildingFilter, setBuildingFilter] = useState<string>("all");
   const [deptFilter, setDeptFilter] = useState<string>("all");
   const [qrAsset, setQrAsset] = useState<Asset | null>(null);
+
+  useEffect(() => {
+    const cat = searchParams.get("category");
+    const q = searchParams.get("search");
+    if (cat) setCatFilter(cat);
+    if (q) setSearch(q);
+  }, [searchParams]);
 
   const hasActiveFilters = catFilter !== "all" || condFilter !== "all" || statusFilter !== "all" || buildingFilter !== "all" || deptFilter !== "all" || search !== "";
 

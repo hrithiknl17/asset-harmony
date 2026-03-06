@@ -81,7 +81,7 @@ const Categories = () => {
                       <span className="font-mono text-muted-foreground ml-2">{a.asset_id}</span>
                     </div>
                   ))}
-                  {catAssets.length > 4 && <p onClick={() => navigate(`/register?search=${encodeURIComponent(cat)}`)} className="text-xs text-muted-foreground text-center pt-1 cursor-pointer hover:text-foreground transition-colors">+{catAssets.length - 4} more</p>}
+                  {catAssets.length > 4 && <p onClick={() => navigate(`/register?category=${encodeURIComponent(cat)}`)} className="text-xs text-muted-foreground text-center pt-1 cursor-pointer hover:text-foreground transition-colors">+{catAssets.length - 4} more</p>}
                 </div>
               </div>
             );
