@@ -43,7 +43,7 @@ const Login = () => {
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${warehouseBg})` }}
       />
-      <div className="absolute inset-0 bg-foreground/60 backdrop-blur-[2px]" />
+      <div className="absolute inset-0 bg-foreground/60" />
 
       <motion.div
         initial={{ opacity: 0, y: 12 }}
