@@ -2,55 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 220 25% 12%;
+    --background: 220 16% 96%;
+    --foreground: 222 30% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 25% 12%;
+    --card-foreground: 222 30% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 12%;
+    --popover-foreground: 222 30% 12%;
 
-    --primary: 220 65% 34%;
-    --primary-foreground: 220 20% 98%;
+    --primary: 222 62% 32%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 168 50% 45%;
+    --secondary: 170 45% 42%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 15% 93%;
-    --muted-foreground: 220 10% 46%;
+    --muted: 220 14% 92%;
+    --muted-foreground: 220 10% 44%;
 
-    --accent: 168 50% 45%;
+    --accent: 222 62% 32%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 65% 51%;
+    --destructive: 0 68% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 90%;
-    --input: 220 15% 90%;
-    --ring: 220 65% 34%;
-
-    --radius: 0.625rem;
-
-    --success: 152 55% 40%;
+    --success: 152 52% 38%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 90% 50%;
+
+    --warning: 38 88% 48%;
     --warning-foreground: 0 0% 100%;
-    --info: 210 60% 50%;
+
+    --info: 210 58% 48%;
     --info-foreground: 0 0% 100%;
 
-    --sidebar-background: 220 55% 16%;
-    --sidebar-foreground: 220 15% 88%;
-    --sidebar-primary: 168 50% 52%;
+    --border: 220 14% 89%;
+    --input: 220 14% 89%;
+    --ring: 222 62% 32%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 222 44% 14%;
+    --sidebar-foreground: 220 14% 86%;
+    --sidebar-primary: 170 50% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 45% 24%;
-    --sidebar-accent-foreground: 220 15% 95%;
-    --sidebar-border: 220 35% 25%;
-    --sidebar-ring: 168 50% 52%;
+    --sidebar-accent: 222 36% 22%;
+    --sidebar-accent-foreground: 220 14% 94%;
+    --sidebar-border: 222 30% 22%;
+    --sidebar-ring: 170 50% 50%;
+
+    /* Surface tokens */
+    --surface: 0 0% 100%;
+    --surface-muted: 220 14% 96%;
   }
 }
 
@@ -59,28 +65,72 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   }
 }
 
-@layer utilities {
+@layer components {
+  .page-shell {
+    @apply space-y-6;
+  }
+  .page-header {
+    @apply flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between;
+  }
+  .page-title {
+    @apply text-xl font-bold tracking-tight sm:text-2xl;
+  }
+  .page-subtitle {
+    @apply text-sm text-muted-foreground;
+  }
+  .section-card {
+    @apply rounded-lg border bg-card p-5 shadow-sm;
+  }
+  .section-title {
+    @apply text-sm font-semibold tracking-tight;
+  }
   .stat-card {
-    @apply bg-card rounded-xl border p-5 shadow-sm transition-all duration-300;
+    @apply rounded-lg border bg-card p-4 shadow-sm transition-shadow hover:shadow-md;
+  }
+  .data-table-wrapper {
+    @apply rounded-lg border bg-card shadow-sm overflow-hidden;
+  }
+  .filter-bar {
+    @apply flex flex-wrap items-center gap-2;
+  }
+}
+
+/* Improved table styles */
+@layer utilities {
+  .table-sticky-header thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: hsl(var(--card));
+  }
+  .table-zebra tbody tr:nth-child(even) {
+    background: hsl(var(--muted) / 0.3);
   }
 }
 
 /* Smooth scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.2);
+  background: hsl(var(--muted-foreground) / 0.18);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.35);
+  background: hsl(var(--muted-foreground) / 0.3);
+}
+
+/* Focus visible */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
 }
