@@ -8,7 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ShoppingCart, PlusCircle, Receipt } from "lucide-react";
-import { motion } from "framer-motion";
+import PageShell from "@/components/PageShell";
+import EmptyState from "@/components/EmptyState";
+import TableSkeleton from "@/components/TableSkeleton";
 import { useToast } from "@/hooks/use-toast";
 
 const Sales = () => {
@@ -41,23 +43,20 @@ const Sales = () => {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <ShoppingCart className="h-6 w-6 text-primary" /> Sales
-          </h1>
-          <p className="text-sm text-muted-foreground">Record and track product sales</p>
-        </div>
-        {canSell && (
+    <PageShell
+      icon={ShoppingCart}
+      title="Sales"
+      subtitle="Record and track product sales"
+      actions={
+        canSell ? (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="gap-2"><PlusCircle className="h-4 w-4" /> New Sale</Button>
+              <Button size="sm" className="gap-1.5"><PlusCircle className="h-4 w-4" /> New Sale</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>Record Sale</DialogTitle></DialogHeader>
-              <div className="grid gap-3 py-2">
-                <div>
+              <div className="grid gap-4 py-2">
+                <div className="space-y-1.5">
                   <Label>Product</Label>
                   <Select value={form.productId} onValueChange={v => setForm({ ...form, productId: v })}>
                     <SelectTrigger><SelectValue placeholder="Select product" /></SelectTrigger>
@@ -71,59 +70,70 @@ const Sales = () => {
                   </Select>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Quantity</Label><Input type="number" min={1} max={selectedProduct?.quantity || 1} value={form.quantity} onChange={e => setForm({ ...form, quantity: e.target.value })} /></div>
-                  <div><Label>Customer</Label><Input value={form.customerName} onChange={e => setForm({ ...form, customerName: e.target.value })} placeholder="Customer name" /></div>
+                  <div className="space-y-1.5">
+                    <Label>Quantity</Label>
+                    <Input type="number" min={1} max={selectedProduct?.quantity || 1} value={form.quantity} onChange={e => setForm({ ...form, quantity: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Customer</Label>
+                    <Input value={form.customerName} onChange={e => setForm({ ...form, customerName: e.target.value })} placeholder="Customer name" />
+                  </div>
                 </div>
                 {selectedProduct && (
-                  <div className="rounded-lg bg-muted/50 p-3 text-sm">
-                    <p>Total: <span className="font-bold text-primary">₹{(selectedProduct.price * parseInt(form.quantity || "0")).toLocaleString()}</span></p>
+                  <div className="rounded-md bg-muted/50 p-3 text-sm">
+                    Total: <span className="font-bold text-primary">₹{(selectedProduct.price * parseInt(form.quantity || "0")).toLocaleString()}</span>
                   </div>
                 )}
-                <div><Label>Notes</Label><Input value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Optional notes" /></div>
+                <div className="space-y-1.5">
+                  <Label>Notes <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                  <Input value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Optional notes" />
+                </div>
                 <Button onClick={handleSale} disabled={recordSale.isPending || !form.productId || !form.quantity}>
                   {recordSale.isPending ? "Processing..." : "Record Sale"}
                 </Button>
               </div>
             </DialogContent>
           </Dialog>
+        ) : undefined
+      }
+    >
+      <div className="data-table-wrapper">
+        {isLoading ? (
+          <TableSkeleton rows={6} columns={7} />
+        ) : !sales?.length ? (
+          <EmptyState icon={Receipt} title="No sales recorded yet" description="Record your first sale to get started" />
+        ) : (
+          <div className="overflow-x-auto">
+            <Table className="table-sticky-header table-zebra">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Product</TableHead>
+                  <TableHead>SKU</TableHead>
+                  <TableHead className="text-right">Qty</TableHead>
+                  <TableHead className="text-right">Unit Price</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead>Customer</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sales.map((s: any) => (
+                  <TableRow key={s.id} className="hover:bg-muted/40">
+                    <TableCell className="text-sm whitespace-nowrap">{new Date(s.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell className="font-medium">{s.products?.name}</TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground">{s.products?.sku}</TableCell>
+                    <TableCell className="text-right tabular-nums">{s.quantity}</TableCell>
+                    <TableCell className="text-right tabular-nums">₹{s.unit_price.toLocaleString()}</TableCell>
+                    <TableCell className="text-right font-semibold tabular-nums">₹{s.total_price.toLocaleString()}</TableCell>
+                    <TableCell className="text-muted-foreground">{s.customer_name || "—"}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </div>
-
-      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Product</TableHead>
-              <TableHead>SKU</TableHead>
-              <TableHead className="text-right">Qty</TableHead>
-              <TableHead className="text-right">Unit Price</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-              <TableHead>Customer</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
-            ) : !sales?.length ? (
-              <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground flex flex-col items-center gap-2">
-                <Receipt className="h-8 w-8 text-muted-foreground/50" />No sales recorded yet
-              </TableCell></TableRow>
-            ) : sales.map((s: any) => (
-              <TableRow key={s.id}>
-                <TableCell className="text-sm">{new Date(s.created_at).toLocaleDateString()}</TableCell>
-                <TableCell className="font-medium">{s.products?.name}</TableCell>
-                <TableCell className="font-mono text-xs">{s.products?.sku}</TableCell>
-                <TableCell className="text-right">{s.quantity}</TableCell>
-                <TableCell className="text-right">₹{s.unit_price.toLocaleString()}</TableCell>
-                <TableCell className="text-right font-semibold">₹{s.total_price.toLocaleString()}</TableCell>
-                <TableCell className="text-muted-foreground">{s.customer_name || "—"}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </motion.div>
+    </PageShell>
   );
 };
 
