@@ -1,6 +1,7 @@
 import { useSales, useProducts } from "@/hooks/useProducts";
 import { useAuth } from "@/contexts/AuthContext";
-import StatCard from "@/components/StatCard";
+import MetricCard from "@/components/MetricCard";
+import SectionCard from "@/components/SectionCard";
 import PageShell from "@/components/PageShell";
 import EmptyState from "@/components/EmptyState";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,16 @@ const SALES_PEOPLE: Record<string, string> = {
 
 const RANK_ICONS = [Crown, Medal, Award];
 const RANK_COLORS = ["text-warning", "text-muted-foreground", "text-warning"];
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-lg border bg-card px-3 py-2 shadow-elevated text-xs">
+      <p className="font-semibold">{label}</p>
+      <p className="text-primary font-bold">{Number(payload[0].value).toLocaleString()}</p>
+    </div>
+  );
+};
 
 const SalesDashboard = () => {
   const { data: sales } = useSales();
@@ -51,23 +62,20 @@ const SalesDashboard = () => {
     <PageShell
       icon={ShoppingCart}
       title="Sales Dashboard"
-      subtitle={`Welcome back, ${profile?.full_name || "Sales Rep"} — here's how you're doing`}
+      subtitle={`Welcome back, ${profile?.full_name || "Sales Rep"}`}
     >
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="My Revenue" value={`₹${(myStats?.revenue || 0).toLocaleString()}`} icon={DollarSign} color="primary" trend={`${myStats?.count || 0} transactions`} />
-        <StatCard label="My Rank" value={myRank > 0 ? `#${myRank}` : "—"} icon={Trophy} color={myRank === 1 ? "success" : myRank <= 3 ? "warning" : "secondary"} trend={`of ${leaderboard.length} sales people`} />
-        <StatCard label="Team Revenue" value={`₹${totalRevenue.toLocaleString()}`} icon={TrendingUp} color="secondary" trend={`${totalSalesCount} total sales`} />
-        <StatCard label="Products Available" value={products?.filter(p => p.quantity > 0).length || 0} icon={ShoppingCart} color="success" trend={`${products?.filter(p => p.quantity <= p.reorder_point).length || 0} low stock`} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricCard label="My Revenue" value={(myStats?.revenue || 0).toLocaleString()} icon={DollarSign} color="primary" trend={`${myStats?.count || 0} transactions`} />
+        <MetricCard label="My Rank" value={myRank > 0 ? `#${myRank}` : "—"} icon={Trophy} color={myRank === 1 ? "success" : myRank <= 3 ? "warning" : "secondary"} trend={`of ${leaderboard.length} reps`} />
+        <MetricCard label="Team Revenue" value={totalRevenue.toLocaleString()} icon={TrendingUp} color="secondary" trend={`${totalSalesCount} total sales`} />
+        <MetricCard label="Products Available" value={products?.filter(p => p.quantity > 0).length || 0} icon={ShoppingCart} color="success" trend={`${products?.filter(p => p.quantity <= p.reorder_point).length || 0} low stock`} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Leaderboard */}
-        <div className="section-card">
-          <h2 className="section-title mb-4 flex items-center gap-1.5">
-            <Trophy className="h-3.5 w-3.5 text-primary" /> Sales Leaderboard
-          </h2>
+        <SectionCard title="Sales Leaderboard" icon={Trophy}>
           {leaderboard.length === 0 ? (
-            <EmptyState title="No sales recorded yet" description="Start making sales to see the leaderboard" />
+            <EmptyState title="No sales recorded yet" description="Start selling to climb the board" />
           ) : (
             <div className="space-y-1.5">
               {leaderboard.map((seller, i) => {
@@ -76,83 +84,81 @@ const SalesDashboard = () => {
                 return (
                   <div
                     key={seller.id}
-                    className={`flex items-center justify-between rounded-md border px-3 py-2.5 transition-colors ${isMe ? "bg-primary/5 border-primary/20" : "hover:bg-muted/40"}`}
+                    className={`flex items-center justify-between rounded-lg border px-3.5 py-3 transition-colors ${isMe ? "bg-primary/5 border-primary/15" : "hover:bg-muted/30"}`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted shrink-0">
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-8 w-8 items-center justify-center rounded-full shrink-0 ${i === 0 ? "bg-warning/15" : "bg-muted"}`}>
                         {i < 3 ? (
-                          <RankIcon className={`h-3.5 w-3.5 ${RANK_COLORS[i]}`} />
+                          <RankIcon className={`h-4 w-4 ${RANK_COLORS[i]}`} />
                         ) : (
                           <span className="text-[10px] font-bold text-muted-foreground">#{i + 1}</span>
                         )}
                       </div>
                       <div>
-                        <p className="text-sm font-medium flex items-center gap-1.5">
+                        <p className="text-sm font-semibold flex items-center gap-1.5">
                           {seller.name}
-                          {isMe && <Badge variant="outline" className="text-[9px] px-1 py-0 h-4">You</Badge>}
+                          {isMe && <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 font-bold">You</Badge>}
                         </p>
-                        <p className="text-xs text-muted-foreground">{seller.count} sales</p>
+                        <p className="text-xs text-muted-foreground font-medium">{seller.count} sales</p>
                       </div>
                     </div>
-                    <p className="text-sm font-bold text-primary">₹{seller.revenue.toLocaleString()}</p>
+                    <p className="text-sm font-extrabold text-primary tabular-nums">{seller.revenue.toLocaleString()}</p>
                   </div>
                 );
               })}
             </div>
           )}
-        </div>
+        </SectionCard>
 
         {/* Chart */}
-        <div className="section-card">
-          <h2 className="section-title mb-4">Revenue by Sales Person</h2>
+        <SectionCard title="Revenue by Rep">
           {chartData.length === 0 ? (
             <EmptyState title="No data yet" />
           ) : (
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={280}>
               <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 89%)" />
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip formatter={(v: number) => `₹${v.toLocaleString()}`} />
-                <Bar dataKey="revenue" fill="hsl(222, 62%, 32%)" radius={[3, 3, 0, 0]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(216, 12%, 88%)" />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(215, 12%, 48%)" }} />
+                <YAxis tick={{ fontSize: 10, fill: "hsl(215, 12%, 48%)" }} />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar dataKey="revenue" fill="hsl(215, 72%, 44%)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
-        </div>
+        </SectionCard>
       </div>
 
       {/* My Recent Sales */}
-      <div className="section-card">
-        <h2 className="section-title mb-4">My Recent Sales</h2>
+      <SectionCard title="My Recent Sales" icon={Receipt} noPadding>
         {mySales.length === 0 ? (
-          <EmptyState icon={Receipt} title="No sales yet" description="Go close some deals!" />
+          <EmptyState icon={Receipt} title="No sales yet" description="Start selling to see your history" />
         ) : (
-          <div className="data-table-wrapper">
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
+                  <TableHead className="pl-5">Date</TableHead>
                   <TableHead>Product</TableHead>
                   <TableHead>Customer</TableHead>
                   <TableHead className="text-right">Qty</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-right pr-5">Total</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {mySales.map((s: any) => (
-                  <TableRow key={s.id}>
-                    <TableCell className="text-sm">{new Date(s.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell className="font-medium">{s.products?.name || "—"}</TableCell>
-                    <TableCell>{s.customer_name || "Walk-in"}</TableCell>
-                    <TableCell className="text-right">{s.quantity}</TableCell>
-                    <TableCell className="text-right font-semibold">₹{Number(s.total_price).toLocaleString()}</TableCell>
+                  <TableRow key={s.id} className="hover:bg-muted/30">
+                    <TableCell className="pl-5 text-sm font-medium">{new Date(s.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell className="font-semibold">{s.products?.name || "—"}</TableCell>
+                    <TableCell className="text-muted-foreground">{s.customer_name || "Walk-in"}</TableCell>
+                    <TableCell className="text-right tabular-nums font-medium">{s.quantity}</TableCell>
+                    <TableCell className="text-right pr-5 font-extrabold text-primary tabular-nums">{Number(s.total_price).toLocaleString()}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </div>
         )}
-      </div>
+      </SectionCard>
     </PageShell>
   );
 };
