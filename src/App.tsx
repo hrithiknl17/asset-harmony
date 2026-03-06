@@ -63,6 +63,7 @@ const App = () => (
               <Route path="/audit/scan" element={<AuditScan />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/reorder" element={<Reorder />} />
+              <Route path="/activity-log" element={<ActivityLog />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
