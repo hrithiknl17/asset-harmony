@@ -155,10 +155,11 @@ const AuditWorkflow = () => {
                     <p className="text-sm font-medium truncate">{a.name}</p>
                     <p className="text-xs text-muted-foreground">{a.location}</p>
                     {(a as any).auditor_profile?.full_name || a.last_audit_date ? (
-                      <p className="text-[10px] text-muted-foreground/70 mt-0.5">
-                        Audited by: <span className="font-medium text-foreground/70">{(a as any).auditor_profile.full_name}</span>
-                        {a.last_audit_date && <span> · {a.last_audit_date}</span>}
-                      </p>
+                      <p className="text-xs text-muted-foreground mt-1 leading-tight">
+                        Scanned by:{" "}
+                        <span className="font-medium text-foreground">
+                          {(a as any).auditor_profile?.full_name || "Unknown"}
+                        </span>
                     )}
                   </div>
                   <div className="flex items-center gap-2 ml-2">
