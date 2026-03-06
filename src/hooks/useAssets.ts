@@ -68,6 +68,17 @@ export const useUpdateAuditStatus = () => {
   });
 };
 
+export const useDeleteAssets = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase.from("assets").delete().in("id", ids);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["assets"] }),
+  });
+};
+
 export const useAuditLogs = () => {
   return useQuery({
     queryKey: ["audit_logs"],
