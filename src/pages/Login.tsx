@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Package, LogIn, AlertCircle, Shield, BarChart3, ScanSearch, ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
+import warehouseBg from "@/assets/warehouse-bg.jpg";
 
 const DEMO_ACCOUNTS = [
   { label: "Admin", desc: "Full system access", email: "admin@assettrack.com", pw: "admin123", icon: Shield, color: "bg-primary/10 text-primary border-primary/20" },
