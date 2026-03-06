@@ -2,12 +2,22 @@ import { useSales, useLowStockProducts, useCreateReorderRequest, useReorderReque
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BarChart3, AlertTriangle, TrendingUp, Package, Send } from "lucide-react";
+import { BarChart3, AlertTriangle, TrendingUp, Package, Send, Crown, Medal, Award } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(38, 92%, 50%)", "hsl(0, 72%, 51%)", "hsl(270, 60%, 50%)"];
+
+const SALES_PEOPLE: Record<string, string> = {
+  "d0000000-0000-0000-0000-000000000001": "Priya (Sales)",
+  "d0000000-0000-0000-0000-000000000002": "Ravi (Sales)",
+  "a0000000-0000-0000-0000-000000000001": "Dev Admin",
+  "b0000000-0000-0000-0000-000000000001": "Hrithik (Manager)",
+};
+
+const RANK_ICONS = [Crown, Medal, Award];
+const RANK_COLORS = ["text-yellow-500", "text-gray-400", "text-amber-600"];
 
 const SalesReport = () => {
   const { data: sales } = useSales();
@@ -19,6 +29,18 @@ const SalesReport = () => {
   const totalRevenue = sales?.reduce((sum: number, s: any) => sum + Number(s.total_price), 0) || 0;
   const totalSales = sales?.length || 0;
   const avgOrderValue = totalSales > 0 ? totalRevenue / totalSales : 0;
+
+  // Top sellers
+  const bySeller: Record<string, { revenue: number; count: number; name: string }> = {};
+  sales?.forEach((s: any) => {
+    const id = s.sold_by;
+    if (!bySeller[id]) bySeller[id] = { revenue: 0, count: 0, name: SALES_PEOPLE[id] || id };
+    bySeller[id].revenue += Number(s.total_price);
+    bySeller[id].count += 1;
+  });
+  const topSellers = Object.entries(bySeller)
+    .map(([id, data]) => ({ id, ...data }))
+    .sort((a, b) => b.revenue - a.revenue);
 
   // Sales by category
   const byCategory: Record<string, number> = {};
@@ -102,7 +124,44 @@ const SalesReport = () => {
         </div>
       </div>
 
-      {/* Low Stock Alert + Reorder */}
+      {/* Top Sellers */}
+      <div className="rounded-xl border bg-card p-5 shadow-sm">
+        <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
+          <Crown className="h-4 w-4 text-yellow-500" /> Top Sales People
+        </h2>
+        {topSellers.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">No sales data yet</p>
+        ) : (
+          <div className="space-y-2">
+            {topSellers.map((seller, i) => {
+              const RankIcon = RANK_ICONS[i] || Medal;
+              const share = totalRevenue > 0 ? ((seller.revenue / totalRevenue) * 100).toFixed(1) : "0";
+              return (
+                <div
+                  key={seller.id}
+                  className={`flex items-center justify-between rounded-lg border px-4 py-3 transition-colors ${i === 0 ? "bg-yellow-500/5 border-yellow-500/20" : "hover:bg-muted/30"}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+                      {i < 3 ? (
+                        <RankIcon className={`h-4 w-4 ${RANK_COLORS[i]}`} />
+                      ) : (
+                        <span className="text-xs font-bold text-muted-foreground">#{i + 1}</span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{seller.name}</p>
+                      <p className="text-xs text-muted-foreground">{seller.count} sales • {share}% of total</p>
+                    </div>
+                  </div>
+                  <p className="text-sm font-bold text-primary">₹{seller.revenue.toLocaleString()}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       <div className="rounded-xl border bg-card p-5 shadow-sm">
         <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-destructive" /> Low Stock / Out of Stock — Reorder
