@@ -163,7 +163,7 @@ const Reorder = () => {
         {isLoading ? (
           <TableSkeleton rows={8} columns={7} />
         ) : filtered.length === 0 ? (
-          <EmptyState icon={Package} title="No assets need reordering" subtitle="All assets are in good condition" />
+          <EmptyState icon={Package} title="No assets need reordering" />
         ) : (
           <table className="w-full text-sm table-sticky-header table-zebra">
             <thead>
