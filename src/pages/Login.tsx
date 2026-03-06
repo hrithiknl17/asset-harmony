@@ -57,8 +57,8 @@ const Login = () => {
             <Package className="h-7 w-7 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-display">AssetTrack</h1>
-            <p className="text-caption mt-1">Operations management platform</p>
+            <h1 className="text-display text-white">AssetTrack</h1>
+            <p className="text-caption mt-1 text-white/70">Inventory management made simpler</p>
           </div>
         </div>
 
