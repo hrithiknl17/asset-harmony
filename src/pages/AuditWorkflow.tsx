@@ -160,8 +160,8 @@ const AuditWorkflow = () => {
                         <span className="font-medium text-foreground">
                           {(a as any).auditor_profile?.full_name || "Unknown"}
                         </span>
-                    )}
-                  </div>
+                        {a.last_audit_date ? <span> · {a.last_audit_date}</span> : null}
+                      </p>
                   <div className="flex items-center gap-2 ml-2">
                     <span className="text-xs font-mono text-muted-foreground">{a.asset_id}</span>
                     {canEdit && (

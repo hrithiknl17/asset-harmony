@@ -25,7 +25,7 @@ export interface DbAsset {
 
 export const useAssets = () => {
   return useQuery({
-    queryKey: ["assets"],
+    queryKey: ["assets", "with-auditor"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("assets")
