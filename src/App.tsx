@@ -13,6 +13,10 @@ import AuditWorkflow from "@/pages/AuditWorkflow";
 import AuditScan from "@/pages/AuditScan";
 import Reports from "@/pages/Reports";
 import Reorder from "@/pages/Reorder";
+import Products from "@/pages/Products";
+import StockCheck from "@/pages/StockCheck";
+import Sales from "@/pages/Sales";
+import SalesReport from "@/pages/SalesReport";
 import Login from "@/pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -47,6 +51,10 @@ const App = () => (
             <Route path="/login" element={<LoginRoute />} />
             <Route element={<ProtectedRoutes />}>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/stock-check" element={<StockCheck />} />
+              <Route path="/sales" element={<Sales />} />
+              <Route path="/sales-report" element={<SalesReport />} />
               <Route path="/register" element={<AssetRegister />} />
               <Route path="/add-asset" element={<AddAsset />} />
               <Route path="/categories" element={<Categories />} />

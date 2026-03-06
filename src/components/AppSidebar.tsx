@@ -1,18 +1,22 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, PlusCircle, FolderTree, ScanSearch, BarChart3, Package, LogOut, User, ShoppingCart, Camera } from "lucide-react";
+import { LayoutDashboard, ClipboardList, PlusCircle, FolderTree, ScanSearch, BarChart3, Package, LogOut, User, ShoppingCart, Camera, PackageCheck, Receipt, TrendingUp } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
 const navItems = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard", roles: ["manager", "auditor"] },
-  { to: "/register", icon: ClipboardList, label: "Asset Register", roles: ["manager", "auditor"] },
-  { to: "/add-asset", icon: PlusCircle, label: "Add Asset", roles: ["manager"] },
-  { to: "/categories", icon: FolderTree, label: "Categories", roles: ["manager", "auditor"] },
-  { to: "/audit", icon: ScanSearch, label: "Audit Workflow", roles: ["manager", "auditor"] },
-  { to: "/audit/scan", icon: Camera, label: "Scan & Audit", roles: ["manager", "auditor"] },
-  { to: "/reports", icon: BarChart3, label: "Reports", roles: ["manager"] },
-  { to: "/reorder", icon: ShoppingCart, label: "Reorder Items", roles: ["manager"] },
+  { to: "/", icon: LayoutDashboard, label: "Dashboard", roles: ["admin", "manager", "auditor", "sales"] },
+  { to: "/products", icon: Package, label: "Products", roles: ["admin", "manager"] },
+  { to: "/stock-check", icon: PackageCheck, label: "Stock Check", roles: ["admin", "manager", "sales"] },
+  { to: "/sales", icon: ShoppingCart, label: "Sales", roles: ["admin", "manager", "sales"] },
+  { to: "/sales-report", icon: TrendingUp, label: "Sales Report", roles: ["admin", "manager"] },
+  { to: "/register", icon: ClipboardList, label: "Asset Register", roles: ["admin", "manager", "auditor"] },
+  { to: "/add-asset", icon: PlusCircle, label: "Add Asset", roles: ["admin", "manager"] },
+  { to: "/categories", icon: FolderTree, label: "Categories", roles: ["admin", "manager", "auditor"] },
+  { to: "/audit", icon: ScanSearch, label: "Audit Workflow", roles: ["admin", "manager", "auditor"] },
+  { to: "/audit/scan", icon: Camera, label: "Scan & Audit", roles: ["admin", "manager", "auditor"] },
+  { to: "/reports", icon: BarChart3, label: "Reports", roles: ["admin", "manager"] },
+  { to: "/reorder", icon: Receipt, label: "Reorder Items", roles: ["admin", "manager"] },
 ];
 
 const AppSidebar = () => {
@@ -29,10 +33,10 @@ const AppSidebar = () => {
         </motion.div>
         <div>
           <h1 className="text-base font-bold text-sidebar-foreground tracking-tight">AssetTrack</h1>
-          <p className="text-[11px] text-sidebar-foreground/60">Office Asset Manager</p>
+          <p className="text-[11px] text-sidebar-foreground/60">Warehouse & Asset Manager</p>
         </div>
       </div>
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
         {visibleItems.map((item, i) => {
           const active = location.pathname === item.to;
           return (

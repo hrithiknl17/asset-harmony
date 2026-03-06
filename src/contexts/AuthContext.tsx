@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 
-type AppRole = "manager" | "auditor";
+type AppRole = "admin" | "manager" | "auditor" | "sales";
 
 interface DummyUser {
   id: string;
@@ -18,8 +18,10 @@ interface AuthContextType {
 }
 
 const DUMMY_USERS = [
+  { email: "admin@assettrack.com", password: "admin123", id: "adm-001", name: "Dev Admin", role: "admin" as AppRole },
   { email: "manager@assettrack.com", password: "manager123", id: "mgr-001", name: "Hrithik (Manager)", role: "manager" as AppRole },
   { email: "auditor@assettrack.com", password: "auditor123", id: "aud-001", name: "Lakkanna (Auditor)", role: "auditor" as AppRole },
+  { email: "sales@assettrack.com", password: "sales123", id: "sal-001", name: "Priya (Sales)", role: "sales" as AppRole },
 ];
 
 const defaultValue: AuthContextType = {
