@@ -1,18 +1,14 @@
 import { Outlet } from "react-router-dom";
 import AppSidebar from "./AppSidebar";
-import { motion } from "framer-motion";
 
 const AppLayout = () => (
   <div className="flex min-h-screen bg-background">
     <AppSidebar />
-    <motion.main
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className="ml-64 flex-1 p-6 lg:p-8"
-    >
-      <Outlet />
-    </motion.main>
+    <main className="flex-1 lg:ml-56 p-4 sm:p-6 lg:p-8 pt-14 lg:pt-6">
+      <div className="mx-auto max-w-7xl">
+        <Outlet />
+      </div>
+    </main>
   </div>
 );
 

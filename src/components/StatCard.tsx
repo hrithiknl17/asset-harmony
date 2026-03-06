@@ -1,5 +1,4 @@
 import { type LucideIcon } from "lucide-react";
-import { motion } from "framer-motion";
 
 interface StatCardProps {
   label: string;
@@ -18,20 +17,16 @@ const colorMap = {
 };
 
 const StatCard = ({ label, value, icon: Icon, trend, color = "primary" }: StatCardProps) => (
-  <motion.div
-    whileHover={{ y: -3, boxShadow: "0 10px 30px -10px rgba(0,0,0,0.1)" }}
-    transition={{ type: "spring", stiffness: 300 }}
-    className="stat-card rounded-xl"
-  >
+  <div className="stat-card">
     <div className="flex items-center justify-between">
-      <p className="text-sm font-medium text-muted-foreground">{label}</p>
-      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${colorMap[color]}`}>
-        <Icon className="h-5 w-5" />
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+      <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${colorMap[color]}`}>
+        <Icon className="h-4 w-4" />
       </div>
     </div>
-    <p className="mt-2 text-3xl font-bold tracking-tight">{value}</p>
+    <p className="mt-2 text-2xl font-bold tracking-tight">{value}</p>
     {trend && <p className="mt-1 text-xs text-muted-foreground">{trend}</p>}
-  </motion.div>
+  </div>
 );
 
 export default StatCard;
