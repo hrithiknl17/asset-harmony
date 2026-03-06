@@ -37,12 +37,19 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center gradient-mesh px-4">
+    <div className="relative flex min-h-screen items-center px-4 sm:px-8 lg:px-16">
+      {/* Background image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${warehouseBg})` }}
+      />
+      <div className="absolute inset-0 bg-foreground/60 backdrop-blur-[2px]" />
+
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="w-full max-w-[400px] space-y-6"
+        className="relative z-10 w-full max-w-[400px] space-y-6"
       >
         {/* Brand */}
         <div className="text-center space-y-2">
