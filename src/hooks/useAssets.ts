@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 
 export interface DbAsset {
   id: string;
@@ -37,10 +36,12 @@ export const useAssets = () => {
 
 export const useUpdateAuditStatus = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ assetId, newStatus, notes }: { assetId: string; newStatus: string; notes?: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       const { data: asset } = await supabase.from("assets").select("audit_status").eq("id", assetId).single();
 
       const { error: updateError } = await supabase
@@ -48,7 +49,7 @@ export const useUpdateAuditStatus = () => {
         .update({
           audit_status: newStatus,
           last_audit_date: new Date().toISOString().split("T")[0],
-          last_audited_by: user?.id,
+          last_audited_by: user.id,
           updated_at: new Date().toISOString(),
         })
         .eq("id", assetId);
@@ -56,7 +57,7 @@ export const useUpdateAuditStatus = () => {
 
       const { error: logError } = await supabase.from("audit_logs").insert({
         asset_id: assetId,
-        auditor_id: user!.id,
+        auditor_id: user.id,
         previous_status: asset?.audit_status || null,
         new_status: newStatus,
         notes: notes || "",
