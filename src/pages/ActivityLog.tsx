@@ -34,6 +34,8 @@ const statusColor = (status: string) => {
 const ActivityLog = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [auditorFilter, setAuditorFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
 
   const { data: logs, isLoading } = useQuery({
     queryKey: ["activity_logs"],
@@ -48,8 +50,15 @@ const ActivityLog = () => {
     },
   });
 
+  const auditors = useMemo(() => {
+    if (!logs) return [];
+    const names = [...new Set(logs.map(l => l.profiles?.full_name).filter(Boolean))] as string[];
+    return names.sort();
+  }, [logs]);
+
   const filtered = useMemo(() => {
     if (!logs) return [];
+    const now = new Date();
     return logs.filter((log) => {
       const matchesSearch =
         !search ||
@@ -58,9 +67,16 @@ const ActivityLog = () => {
         log.assets?.asset_id?.toLowerCase().includes(search.toLowerCase()) ||
         log.notes?.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = statusFilter === "all" || log.new_status === statusFilter;
-      return matchesSearch && matchesStatus;
+      const matchesAuditor = auditorFilter === "all" || log.profiles?.full_name === auditorFilter;
+      let matchesDate = true;
+      if (dateFilter !== "all") {
+        const logDate = new Date(log.created_at);
+        const days = dateFilter === "7d" ? 7 : dateFilter === "30d" ? 30 : 90;
+        matchesDate = (now.getTime() - logDate.getTime()) / 86400000 <= days;
+      }
+      return matchesSearch && matchesStatus && matchesAuditor && matchesDate;
     });
-  }, [logs, search, statusFilter]);
+  }, [logs, search, statusFilter, auditorFilter, dateFilter]);
 
   return (
     <PageShell
@@ -68,8 +84,8 @@ const ActivityLog = () => {
       subtitle="Track who did what across audits and asset changes"
       icon={ScrollText}
       filters={
-        <div className="flex flex-col sm:flex-row gap-2">
-          <div className="relative flex-1">
+        <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
+          <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by auditor, asset, or notes..."
@@ -79,7 +95,7 @@ const ActivityLog = () => {
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-[160px] h-9">
+            <SelectTrigger className="w-full sm:w-[150px] h-9">
               <SelectValue placeholder="All statuses" />
             </SelectTrigger>
             <SelectContent>
@@ -87,6 +103,28 @@ const ActivityLog = () => {
               <SelectItem value="Verified">Verified</SelectItem>
               <SelectItem value="Pending">Pending</SelectItem>
               <SelectItem value="Discrepancy">Discrepancy</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={auditorFilter} onValueChange={setAuditorFilter}>
+            <SelectTrigger className="w-full sm:w-[170px] h-9">
+              <SelectValue placeholder="All auditors" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Auditors</SelectItem>
+              {auditors.map(name => (
+                <SelectItem key={name} value={name}>{name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={dateFilter} onValueChange={setDateFilter}>
+            <SelectTrigger className="w-full sm:w-[140px] h-9">
+              <SelectValue placeholder="All time" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="7d">Last 7 Days</SelectItem>
+              <SelectItem value="30d">Last 30 Days</SelectItem>
+              <SelectItem value="90d">Last 90 Days</SelectItem>
             </SelectContent>
           </Select>
         </div>
