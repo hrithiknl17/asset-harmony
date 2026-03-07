@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      asset_reorder_requests: {
+        Row: {
+          approved_by: string | null
+          asset_id: string
+          created_at: string
+          estimated_cost: number
+          id: string
+          notes: string
+          rejection_reason: string | null
+          requested_by: string
+          status: string
+          updated_at: string
+          vendor_email_sent: boolean
+        }
+        Insert: {
+          approved_by?: string | null
+          asset_id: string
+          created_at?: string
+          estimated_cost?: number
+          id?: string
+          notes?: string
+          rejection_reason?: string | null
+          requested_by: string
+          status?: string
+          updated_at?: string
+          vendor_email_sent?: boolean
+        }
+        Update: {
+          approved_by?: string | null
+          asset_id?: string
+          created_at?: string
+          estimated_cost?: number
+          id?: string
+          notes?: string
+          rejection_reason?: string | null
+          requested_by?: string
+          status?: string
+          updated_at?: string
+          vendor_email_sent?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_reorder_requests_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assets: {
         Row: {
           asset_id: string
