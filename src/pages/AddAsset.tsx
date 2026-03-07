@@ -127,10 +127,6 @@ const AddAsset = () => {
             <Input value={form.serialNumber} onChange={e => update("serialNumber", e.target.value)} placeholder="e.g. DL5540-X9K2M" className="font-mono" />
           </div>
 
-          <div>
-            <Label>Purchase Date</Label>
-            <Input type="date" value={form.purchaseDate} onChange={e => update("purchaseDate", e.target.value)} />
-          </div>
 
           <div className="sm:col-span-2 pt-2">
             <Button type="submit" size="lg" className="w-full sm:w-auto">
