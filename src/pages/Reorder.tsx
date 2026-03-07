@@ -298,7 +298,7 @@ const Reorder = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/50">
-                    {["Asset", "Vendor", "Cost", "Status", "Date"].map((h) => (
+                    {["Asset", "Vendor", "Cost", "Status", "Date", ""].map((h) => (
                       <th key={h} className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">
                         {h}
                       </th>
