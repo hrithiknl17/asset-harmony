@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Search, ShoppingCart, AlertTriangle, Package, Receipt, ShieldCheck, XCircle, Clock, IndianRupee } from "lucide-react";
+import { Search, ShoppingCart, AlertTriangle, Package, Receipt, ShieldCheck, XCircle, Clock, IndianRupee, Printer } from "lucide-react";
+import { printReceipt } from "@/lib/printReceipt";
 import PageShell from "@/components/PageShell";
 import EmptyState from "@/components/EmptyState";
 import TableSkeleton from "@/components/TableSkeleton";
@@ -297,7 +298,7 @@ const Reorder = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/50">
-                    {["Asset", "Vendor", "Cost", "Status", "Date"].map((h) => (
+                    {["Asset", "Vendor", "Cost", "Status", "Date", ""].map((h) => (
                       <th key={h} className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">
                         {h}
                       </th>
@@ -312,6 +313,29 @@ const Reorder = () => {
                       <td className="px-3 py-2.5 font-mono text-xs">{formatCurrency(req.estimated_cost)}</td>
                       <td className="px-3 py-2.5">{statusBadge(req.status)}</td>
                       <td className="px-3 py-2.5 text-xs text-muted-foreground">{new Date(req.created_at).toLocaleDateString()}</td>
+                      <td className="px-3 py-2.5">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0"
+                          onClick={() =>
+                            printReceipt({
+                              id: req.id,
+                              assetName: req.asset?.name || "Unknown",
+                              assetId: req.asset?.asset_id || "—",
+                              vendor: req.asset?.vendor || "",
+                              category: req.asset?.category || "",
+                              location: req.asset ? `${req.asset.building} – ${req.asset.room}` : "",
+                              cost: req.estimated_cost,
+                              status: req.status,
+                              date: new Date(req.created_at).toLocaleDateString(),
+                              notes: req.notes,
+                            })
+                          }
+                        >
+                          <Printer className="h-3.5 w-3.5" />
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
