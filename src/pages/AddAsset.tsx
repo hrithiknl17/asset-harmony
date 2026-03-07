@@ -40,7 +40,7 @@ const AddAsset = () => {
           <QRCodeSVG value={JSON.stringify({ assetId: generatedId, name: form.name, serial: form.serialNumber })} size={180} />
           <p className="font-mono text-lg font-bold">{generatedId}</p>
           <p className="text-sm text-muted-foreground">Print this QR code and attach it to the asset.</p>
-          <Button onClick={() => { setSubmitted(false); setForm({ name: "", category: "", building: "", floor: "", room: "", department: "", vendor: "", model: "", serialNumber: "", purchaseDate: "", condition: "" }); }}>
+          <Button onClick={() => { setSubmitted(false); setForm({ name: "", category: "", building: "", floor: "", room: "", department: "", vendor: "", model: "", serialNumber: "", condition: "" }); }}>
             <PlusCircle className="mr-2 h-4 w-4" /> Register Another Asset
           </Button>
         </div>
