@@ -94,12 +94,12 @@ const Reorder = () => {
   const handleSubmitReorder = async () => {
     const requests = selectedItems.map((item) => ({
       asset_id: item.id,
-      estimated_cost: parseFloat(costInputs[item.id] || "0"),
+      estimated_cost: item.unit_cost || 0,
       notes,
     }));
 
     if (requests.some((r) => r.estimated_cost <= 0)) {
-      toast.error("Please enter a valid cost for all selected assets");
+      toast.error("Some selected assets have no cost set. Please update them first.");
       return;
     }
 
