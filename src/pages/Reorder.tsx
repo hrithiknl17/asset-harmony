@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Search, ShoppingCart, AlertTriangle, Package, Receipt, ShieldCheck, XCircle, Clock, IndianRupee } from "lucide-react";
+import { Search, ShoppingCart, AlertTriangle, Package, Receipt, ShieldCheck, XCircle, Clock, IndianRupee, Printer } from "lucide-react";
+import { printReceipt } from "@/lib/printReceipt";
 import PageShell from "@/components/PageShell";
 import EmptyState from "@/components/EmptyState";
 import TableSkeleton from "@/components/TableSkeleton";
