@@ -313,7 +313,29 @@ const Reorder = () => {
                       <td className="px-3 py-2.5 font-mono text-xs">{formatCurrency(req.estimated_cost)}</td>
                       <td className="px-3 py-2.5">{statusBadge(req.status)}</td>
                       <td className="px-3 py-2.5 text-xs text-muted-foreground">{new Date(req.created_at).toLocaleDateString()}</td>
-                    </tr>
+                      <td className="px-3 py-2.5">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0"
+                          onClick={() =>
+                            printReceipt({
+                              id: req.id,
+                              assetName: req.asset?.name || "Unknown",
+                              assetId: req.asset?.asset_id || "—",
+                              vendor: req.asset?.vendor || "",
+                              category: req.asset?.category || "",
+                              location: req.asset ? `${req.asset.building} – ${req.asset.room}` : "",
+                              cost: req.estimated_cost,
+                              status: req.status,
+                              date: new Date(req.created_at).toLocaleDateString(),
+                              notes: req.notes,
+                            })
+                          }
+                        >
+                          <Printer className="h-3.5 w-3.5" />
+                        </Button>
+                      </td>
                   ))}
                 </tbody>
               </table>
