@@ -85,16 +85,11 @@ const Reorder = () => {
   };
 
   const openCostDialog = () => {
-    const defaults: Record<string, string> = {};
-    selectedItems.forEach((i) => {
-      defaults[i.id] = "";
-    });
-    setCostInputs(defaults);
     setNotes("");
     setCostDialog(true);
   };
 
-  const totalEstimatedCost = Object.values(costInputs).reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
+  const totalEstimatedCost = selectedItems.reduce((sum, i) => sum + (i.unit_cost || 0), 0);
 
   const handleSubmitReorder = async () => {
     const requests = selectedItems.map((item) => ({
