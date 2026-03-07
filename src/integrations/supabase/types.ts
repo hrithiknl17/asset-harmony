@@ -83,6 +83,7 @@ export type Database = {
           purchase_date: string | null
           room: string
           serial_number: string
+          unit_cost: number
           updated_at: string
           vendor: string
         }
@@ -104,6 +105,7 @@ export type Database = {
           purchase_date?: string | null
           room?: string
           serial_number?: string
+          unit_cost?: number
           updated_at?: string
           vendor?: string
         }
@@ -125,6 +127,7 @@ export type Database = {
           purchase_date?: string | null
           room?: string
           serial_number?: string
+          unit_cost?: number
           updated_at?: string
           vendor?: string
         }
