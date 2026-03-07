@@ -137,11 +137,11 @@ const Reorder = () => {
     switch (status) {
       case "auto_approved":
       case "approved":
-        return <ShieldCheck className="h-3.5 w-3.5 text-green-600" />;
+        return <ShieldCheck className="h-3.5 w-3.5 text-primary" />;
       case "rejected":
         return <XCircle className="h-3.5 w-3.5 text-destructive" />;
       default:
-        return <Clock className="h-3.5 w-3.5 text-amber-500" />;
+        return <Clock className="h-3.5 w-3.5 text-muted-foreground" />;
     }
   };
 
