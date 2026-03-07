@@ -29,7 +29,6 @@ const Reorder = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [costDialog, setCostDialog] = useState(false);
   const [notes, setNotes] = useState("");
-  const [notes, setNotes] = useState("");
   const [processing, setProcessing] = useState(false);
 
   const reorderableAssets = useMemo(() => {
