@@ -19,6 +19,7 @@ export interface DbAsset {
   audit_status: string;
   last_audit_date: string | null;
   last_audited_by: string | null;
+  unit_cost: number;
   created_at: string;
   updated_at: string;
 }

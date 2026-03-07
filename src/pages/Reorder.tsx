@@ -28,7 +28,6 @@ const Reorder = () => {
   const [conditionFilter, setConditionFilter] = useState("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [costDialog, setCostDialog] = useState(false);
-  const [costInputs, setCostInputs] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState("");
   const [processing, setProcessing] = useState(false);
 
@@ -85,26 +84,21 @@ const Reorder = () => {
   };
 
   const openCostDialog = () => {
-    const defaults: Record<string, string> = {};
-    selectedItems.forEach((i) => {
-      defaults[i.id] = "";
-    });
-    setCostInputs(defaults);
     setNotes("");
     setCostDialog(true);
   };
 
-  const totalEstimatedCost = Object.values(costInputs).reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
+  const totalEstimatedCost = selectedItems.reduce((sum, i) => sum + (i.unit_cost || 0), 0);
 
   const handleSubmitReorder = async () => {
     const requests = selectedItems.map((item) => ({
       asset_id: item.id,
-      estimated_cost: parseFloat(costInputs[item.id] || "0"),
+      estimated_cost: item.unit_cost || 0,
       notes,
     }));
 
     if (requests.some((r) => r.estimated_cost <= 0)) {
-      toast.error("Please enter a valid cost for all selected assets");
+      toast.error("Some selected assets have no cost set. Please update them first.");
       return;
     }
 
@@ -331,28 +325,22 @@ const Reorder = () => {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <IndianRupee className="h-4 w-4" /> Reorder Cost Estimation
+              <IndianRupee className="h-4 w-4" /> Confirm Reorder
             </DialogTitle>
-            <DialogDescription>Enter estimated replacement cost for each selected asset.</DialogDescription>
+            <DialogDescription>Review the items and costs before submitting.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 max-h-[300px] overflow-y-auto">
             {selectedItems.map((item) => (
-              <div key={item.id} className="flex items-center gap-3">
+              <div key={item.id} className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{item.name}</p>
                   <p className="text-xs text-muted-foreground">
                     {item.asset_id} · {item.vendor || "No vendor"}
                   </p>
                 </div>
-                <div className="w-32">
-                  <Input
-                    type="number"
-                    placeholder="₹ Cost"
-                    className="h-8 text-sm"
-                    value={costInputs[item.id] || ""}
-                    onChange={(e) => setCostInputs((prev) => ({ ...prev, [item.id]: e.target.value }))}
-                  />
-                </div>
+                <span className="font-mono text-sm font-semibold whitespace-nowrap">
+                  {item.unit_cost > 0 ? formatCurrency(item.unit_cost) : <span className="text-destructive">No cost set</span>}
+                </span>
               </div>
             ))}
           </div>
@@ -368,10 +356,9 @@ const Reorder = () => {
           </div>
           <div className="rounded-md border px-4 py-3 space-y-1">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Total Estimated Cost:</span>
+              <span className="text-muted-foreground">Total Cost:</span>
               <span className="font-bold">{formatCurrency(totalEstimatedCost)}</span>
             </div>
-            <p className="text-xs text-muted-foreground">All submitted orders go directly to history.</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCostDialog(false)}>

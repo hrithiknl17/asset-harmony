@@ -14,7 +14,7 @@ const AddAsset = () => {
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
     name: "", category: "" as string, building: "", floor: "", room: "", department: "",
-    vendor: "", model: "", serialNumber: "", condition: "" as string,
+    vendor: "", model: "", serialNumber: "", condition: "" as string, unitCost: "",
   });
 
   const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
@@ -40,7 +40,7 @@ const AddAsset = () => {
           <QRCodeSVG value={JSON.stringify({ assetId: generatedId, name: form.name, serial: form.serialNumber })} size={180} />
           <p className="font-mono text-lg font-bold">{generatedId}</p>
           <p className="text-sm text-muted-foreground">Print this QR code and attach it to the asset.</p>
-          <Button onClick={() => { setSubmitted(false); setForm({ name: "", category: "", building: "", floor: "", room: "", department: "", vendor: "", model: "", serialNumber: "", condition: "" }); }}>
+          <Button onClick={() => { setSubmitted(false); setForm({ name: "", category: "", building: "", floor: "", room: "", department: "", vendor: "", model: "", serialNumber: "", condition: "", unitCost: "" }); }}>
             <PlusCircle className="mr-2 h-4 w-4" /> Register Another Asset
           </Button>
         </div>
@@ -126,6 +126,12 @@ const AddAsset = () => {
             <Label>Serial Number</Label>
             <Input value={form.serialNumber} onChange={e => update("serialNumber", e.target.value)} placeholder="e.g. DL5540-X9K2M" className="font-mono" />
           </div>
+
+          <div>
+            <Label>Unit Cost (₹)</Label>
+            <Input type="number" value={form.unitCost} onChange={e => update("unitCost", e.target.value)} placeholder="e.g. 45000" />
+          </div>
+
 
 
           <div className="sm:col-span-2 pt-2">
