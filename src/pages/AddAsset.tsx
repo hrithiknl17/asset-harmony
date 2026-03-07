@@ -14,7 +14,7 @@ const AddAsset = () => {
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
     name: "", category: "" as string, building: "", floor: "", room: "", department: "",
-    vendor: "", model: "", serialNumber: "", purchaseDate: "", condition: "" as string,
+    vendor: "", model: "", serialNumber: "", condition: "" as string,
   });
 
   const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
