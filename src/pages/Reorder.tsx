@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { useAssets } from "@/hooks/useAssets";
-import { useCreateAssetReorder, useAssetReorderRequests, useApproveRejectReorder, BUDGET_LIMIT } from "@/hooks/useAssetReorders";
-import { useAuth } from "@/contexts/AuthContext";
+import { useCreateAssetReorder, useAssetReorderRequests } from "@/hooks/useAssetReorders";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Search, ShoppingCart, AlertTriangle, Package, Receipt, ShieldCheck, ShieldAlert, CheckCircle2, XCircle, Clock, IndianRupee } from "lucide-react";
+import { Search, ShoppingCart, AlertTriangle, Package, Receipt, ShieldCheck, XCircle, Clock, IndianRupee } from "lucide-react";
 import PageShell from "@/components/PageShell";
 import EmptyState from "@/components/EmptyState";
 import TableSkeleton from "@/components/TableSkeleton";
@@ -23,8 +22,6 @@ const Reorder = () => {
   const { data: assets, isLoading } = useAssets();
   const { data: reorderRequests } = useAssetReorderRequests();
   const createReorder = useCreateAssetReorder();
-  const approveReject = useApproveRejectReorder();
-  const { role } = useAuth();
 
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
@@ -35,23 +32,24 @@ const Reorder = () => {
   const [notes, setNotes] = useState("");
   const [processing, setProcessing] = useState(false);
 
-  // Reject dialog
-  const [rejectDialog, setRejectDialog] = useState(false);
-  const [rejectId, setRejectId] = useState<string | null>(null);
-  const [rejectReason, setRejectReason] = useState("");
-
-  const isAdmin = role === "admin";
-
   const reorderableAssets = useMemo(() => {
     if (!assets) return [];
-    return assets.filter(a =>
-      a.condition === "Poor" || a.condition === "Fair" || a.condition === "Decommissioned" || a.audit_status === "Discrepancy"
+    return assets.filter(
+      (a) =>
+        a.condition === "Poor" ||
+        a.condition === "Fair" ||
+        a.condition === "Decommissioned" ||
+        a.audit_status === "Discrepancy"
     );
   }, [assets]);
 
   const filtered = useMemo(() => {
-    return reorderableAssets.filter(a => {
-      const matchSearch = !search || a.name.toLowerCase().includes(search.toLowerCase()) || a.asset_id.toLowerCase().includes(search.toLowerCase()) || a.vendor.toLowerCase().includes(search.toLowerCase());
+    return reorderableAssets.filter((a) => {
+      const matchSearch =
+        !search ||
+        a.name.toLowerCase().includes(search.toLowerCase()) ||
+        a.asset_id.toLowerCase().includes(search.toLowerCase()) ||
+        a.vendor.toLowerCase().includes(search.toLowerCase());
       const matchCat = catFilter === "all" || a.category === catFilter;
       const matchCondition = conditionFilter === "all" || a.condition === conditionFilter;
       return matchSearch && matchCat && matchCondition;
@@ -59,43 +57,53 @@ const Reorder = () => {
   }, [reorderableAssets, search, catFilter, conditionFilter]);
 
   const toggleSelect = (id: string) => {
-    setSelected(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
 
   const selectAll = () => {
     if (selected.size === filtered.length) setSelected(new Set());
-    else setSelected(new Set(filtered.map(i => i.id)));
+    else setSelected(new Set(filtered.map((i) => i.id)));
   };
 
-  const selectedItems = filtered.filter(i => selected.has(i.id));
+  const selectedItems = filtered.filter((i) => selected.has(i.id));
 
   const conditionBadge = (condition: string) => {
     switch (condition) {
-      case "Decommissioned": case "Poor": return "destructive" as const;
-      case "Fair": return "secondary" as const;
-      default: return "default" as const;
+      case "Decommissioned":
+      case "Poor":
+        return "destructive" as const;
+      case "Fair":
+        return "secondary" as const;
+      default:
+        return "default" as const;
     }
   };
 
   const openCostDialog = () => {
     const defaults: Record<string, string> = {};
-    selectedItems.forEach(i => { defaults[i.id] = ""; });
+    selectedItems.forEach((i) => {
+      defaults[i.id] = "";
+    });
     setCostInputs(defaults);
     setNotes("");
     setCostDialog(true);
   };
 
   const totalEstimatedCost = Object.values(costInputs).reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
-  const needsApproval = totalEstimatedCost > BUDGET_LIMIT;
 
   const handleSubmitReorder = async () => {
-    const requests = selectedItems.map(item => ({
+    const requests = selectedItems.map((item) => ({
       asset_id: item.id,
       estimated_cost: parseFloat(costInputs[item.id] || "0"),
       notes,
     }));
 
-    if (requests.some(r => r.estimated_cost <= 0)) {
+    if (requests.some((r) => r.estimated_cost <= 0)) {
       toast.error("Please enter a valid cost for all selected assets");
       return;
     }
@@ -103,22 +111,9 @@ const Reorder = () => {
     setProcessing(true);
     try {
       const rows = await createReorder.mutateAsync(requests);
-      const autoApproved = rows.filter(r => r.status === "auto_approved").length;
-      const pendingApproval = rows.filter(r => r.status === "pending_approval").length;
-
       setCostDialog(false);
       setSelected(new Set());
-
-      if (pendingApproval > 0) {
-        toast.info(`${pendingApproval} request(s) sent for admin approval`, {
-          description: `Total ${formatCurrency(totalEstimatedCost)} exceeds limit of ${formatCurrency(BUDGET_LIMIT)}.`,
-        });
-      }
-      if (autoApproved > 0) {
-        toast.success(`${autoApproved} request(s) auto-approved`, {
-          description: `Within budget limit of ${formatCurrency(BUDGET_LIMIT)}.`,
-        });
-      }
+      toast.success(`${rows.length} reorder request(s) submitted`);
     } catch (e: any) {
       toast.error("Failed to submit reorder", { description: e.message });
     } finally {
@@ -126,69 +121,51 @@ const Reorder = () => {
     }
   };
 
-  const handleApprove = async (id: string) => {
-    try {
-      await approveReject.mutateAsync({ id, action: "approved" });
-      toast.success("Reorder request approved");
-    } catch (e: any) {
-      toast.error("Failed to approve", { description: e.message });
-    }
-  };
-
-  const openRejectDialog = (id: string) => {
-    setRejectId(id);
-    setRejectReason("");
-    setRejectDialog(true);
-  };
-
-  const handleReject = async () => {
-    if (!rejectId) return;
-    try {
-      await approveReject.mutateAsync({ id: rejectId, action: "rejected", reason: rejectReason });
-      setRejectDialog(false);
-      toast.success("Reorder request rejected");
-    } catch (e: any) {
-      toast.error("Failed to reject", { description: e.message });
-    }
-  };
-
-  const pendingRequests = useMemo(() => {
-    if (!reorderRequests || !assets) return [];
-    return reorderRequests
-      .filter(r => r.status === "pending_approval")
-      .map(r => ({
-        ...r,
-        asset: assets.find(a => a.id === r.asset_id),
-      }));
-  }, [reorderRequests, assets]);
-
   const recentRequests = useMemo(() => {
     if (!reorderRequests || !assets) return [];
-    return reorderRequests.slice(0, 20).map(r => ({
+    return reorderRequests.slice(0, 20).map((r) => ({
       ...r,
-      asset: assets.find(a => a.id === r.asset_id),
+      asset: assets.find((a) => a.id === r.asset_id),
     }));
   }, [reorderRequests, assets]);
 
   const activeCategories = useMemo(() => {
-    return [...new Set(reorderableAssets.map(a => a.category))].sort();
+    return [...new Set(reorderableAssets.map((a) => a.category))].sort();
   }, [reorderableAssets]);
 
   const statusIcon = (status: string) => {
     switch (status) {
-      case "auto_approved": return <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />;
-      case "approved": return <ShieldCheck className="h-3.5 w-3.5 text-green-600" />;
-      case "rejected": return <XCircle className="h-3.5 w-3.5 text-destructive" />;
-      default: return <Clock className="h-3.5 w-3.5 text-amber-500" />;
+      case "auto_approved":
+      case "approved":
+        return <ShieldCheck className="h-3.5 w-3.5 text-primary" />;
+      case "rejected":
+        return <XCircle className="h-3.5 w-3.5 text-destructive" />;
+      default:
+        return <Clock className="h-3.5 w-3.5 text-muted-foreground" />;
     }
   };
 
   const statusBadge = (status: string) => {
     switch (status) {
-      case "auto_approved": return <Badge variant="default" className="text-[10px] gap-1">{statusIcon(status)} Auto-Approved</Badge>;
-      case "approved": return <Badge variant="default" className="text-[10px] gap-1">{statusIcon(status)} Approved</Badge>;
-      case "rejected": return <Badge variant="destructive" className="text-[10px] gap-1">{statusIcon(status)} Rejected</Badge>;
-      default: return <Badge variant="secondary" className="text-[10px] gap-1">{statusIcon(status)} Pending Approval</Badge>;
+      case "auto_approved":
+      case "approved":
+        return (
+          <Badge variant="default" className="text-[10px] gap-1">
+            {statusIcon(status)} Approved
+          </Badge>
+        );
+      case "rejected":
+        return (
+          <Badge variant="destructive" className="text-[10px] gap-1">
+            {statusIcon(status)} Rejected
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="secondary" className="text-[10px] gap-1">
+            {statusIcon(status)} Pending
+          </Badge>
+        );
     }
   };
 
@@ -196,7 +173,7 @@ const Reorder = () => {
     <PageShell
       icon={Receipt}
       title="Reorder Items"
-      subtitle={`Assets needing replacement · Budget limit: ${formatCurrency(BUDGET_LIMIT)} (auto-approve below)`}
+      subtitle="Assets needing replacement"
       actions={
         <Button variant="outline" size="sm" className="gap-1.5" disabled={selected.size === 0} onClick={openCostDialog}>
           <ShoppingCart className="h-3.5 w-3.5" /> Submit Reorder ({selected.size})
@@ -206,17 +183,30 @@ const Reorder = () => {
         <>
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search by name, ID, or vendor..." className="pl-9 h-9" value={search} onChange={e => setSearch(e.target.value)} />
+            <Input
+              placeholder="Search by name, ID, or vendor..."
+              className="pl-9 h-9"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
           <Select value={catFilter} onValueChange={setCatFilter}>
-            <SelectTrigger className="w-[180px] h-9 text-xs"><SelectValue placeholder="Category" /></SelectTrigger>
+            <SelectTrigger className="w-[180px] h-9 text-xs">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {activeCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              {activeCategories.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select value={conditionFilter} onValueChange={setConditionFilter}>
-            <SelectTrigger className="w-[150px] h-9 text-xs"><SelectValue placeholder="Condition" /></SelectTrigger>
+            <SelectTrigger className="w-[150px] h-9 text-xs">
+              <SelectValue placeholder="Condition" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Conditions</SelectItem>
               <SelectItem value="Fair">Fair</SelectItem>
@@ -230,16 +220,9 @@ const Reorder = () => {
       <Tabs defaultValue="assets" className="space-y-4">
         <TabsList>
           <TabsTrigger value="assets">Assets to Reorder</TabsTrigger>
-          {isAdmin && pendingRequests.length > 0 && (
-            <TabsTrigger value="approvals" className="gap-1.5">
-              <ShieldAlert className="h-3.5 w-3.5" /> Pending Approvals
-              <Badge variant="destructive" className="ml-1 text-[10px] h-5 px-1.5">{pendingRequests.length}</Badge>
-            </TabsTrigger>
-          )}
-          <TabsTrigger value="history">Request History</TabsTrigger>
+          <TabsTrigger value="history">Order History</TabsTrigger>
         </TabsList>
 
-        {/* ---- Assets Tab ---- */}
         <TabsContent value="assets" className="space-y-3">
           {selected.size > 0 && (
             <div className="flex items-center gap-3 rounded-md border bg-primary/5 px-4 py-2.5 text-sm">
@@ -260,17 +243,21 @@ const Reorder = () => {
                     <th className="px-3 py-2.5 text-left">
                       <Checkbox checked={selected.size === filtered.length && filtered.length > 0} onCheckedChange={selectAll} />
                     </th>
-                    {["Asset ID", "Name", "Category", "Vendor", "Model", "Condition", "Audit Status", "Location"].map(h => (
-                      <th key={h} className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">{h}</th>
+                    {["Asset ID", "Name", "Category", "Vendor", "Model", "Condition", "Audit Status", "Location"].map((h) => (
+                      <th key={h} className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">
+                        {h}
+                      </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map(asset => {
+                  {filtered.map((asset) => {
                     const isSelected = selected.has(asset.id);
                     return (
                       <tr key={asset.id} className={`border-b last:border-0 transition-colors ${isSelected ? "bg-primary/5" : "hover:bg-muted/40"}`}>
-                        <td className="px-3 py-2.5"><Checkbox checked={isSelected} onCheckedChange={() => toggleSelect(asset.id)} /></td>
+                        <td className="px-3 py-2.5">
+                          <Checkbox checked={isSelected} onCheckedChange={() => toggleSelect(asset.id)} />
+                        </td>
                         <td className="px-3 py-2.5 font-mono text-xs">{asset.asset_id}</td>
                         <td className="px-3 py-2.5 font-medium">{asset.name}</td>
                         <td className="px-3 py-2.5 text-xs text-muted-foreground">{asset.category}</td>
@@ -283,11 +270,22 @@ const Reorder = () => {
                           </Badge>
                         </td>
                         <td className="px-3 py-2.5">
-                          <Badge variant={asset.audit_status === "Discrepancy" ? "destructive" : asset.audit_status === "Pending" ? "secondary" : "default"} className="text-[10px]">
+                          <Badge
+                            variant={
+                              asset.audit_status === "Discrepancy"
+                                ? "destructive"
+                                : asset.audit_status === "Pending"
+                                  ? "secondary"
+                                  : "default"
+                            }
+                            className="text-[10px]"
+                          >
                             {asset.audit_status}
                           </Badge>
                         </td>
-                        <td className="px-3 py-2.5 text-xs text-muted-foreground">{asset.building} – {asset.room}</td>
+                        <td className="px-3 py-2.5 text-xs text-muted-foreground">
+                          {asset.building} – {asset.room}
+                        </td>
                       </tr>
                     );
                   })}
@@ -297,56 +295,6 @@ const Reorder = () => {
           </div>
         </TabsContent>
 
-        {/* ---- Approvals Tab (Admin only) ---- */}
-        {isAdmin && (
-          <TabsContent value="approvals" className="space-y-3">
-            {pendingRequests.length === 0 ? (
-              <EmptyState icon={ShieldCheck} title="No pending approvals" />
-            ) : (
-              <div className="space-y-3">
-                <div className="rounded-md border bg-amber-50 dark:bg-amber-950/20 px-4 py-3 text-sm flex items-center gap-2 text-amber-800 dark:text-amber-200">
-                  <ShieldAlert className="h-4 w-4" />
-                  These requests exceed the {formatCurrency(BUDGET_LIMIT)} budget limit and need your approval.
-                </div>
-                <div className="data-table-wrapper overflow-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-muted/50">
-                        {["Asset", "Asset ID", "Vendor", "Estimated Cost", "Notes", "Requested", "Actions"].map(h => (
-                          <th key={h} className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pendingRequests.map(req => (
-                        <tr key={req.id} className="border-b last:border-0 hover:bg-muted/40">
-                          <td className="px-3 py-2.5 font-medium">{req.asset?.name || "Unknown"}</td>
-                          <td className="px-3 py-2.5 font-mono text-xs">{req.asset?.asset_id || "—"}</td>
-                          <td className="px-3 py-2.5 text-xs text-muted-foreground">{req.asset?.vendor || "—"}</td>
-                          <td className="px-3 py-2.5 font-semibold text-destructive">{formatCurrency(req.estimated_cost)}</td>
-                          <td className="px-3 py-2.5 text-xs text-muted-foreground max-w-[200px] truncate">{req.notes || "—"}</td>
-                          <td className="px-3 py-2.5 text-xs text-muted-foreground">{new Date(req.created_at).toLocaleDateString()}</td>
-                          <td className="px-3 py-2.5">
-                            <div className="flex gap-1.5">
-                              <Button size="sm" variant="default" className="h-7 text-xs gap-1" onClick={() => handleApprove(req.id)}>
-                                <CheckCircle2 className="h-3 w-3" /> Approve
-                              </Button>
-                              <Button size="sm" variant="destructive" className="h-7 text-xs gap-1" onClick={() => openRejectDialog(req.id)}>
-                                <XCircle className="h-3 w-3" /> Reject
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-          </TabsContent>
-        )}
-
-        {/* ---- History Tab ---- */}
         <TabsContent value="history" className="space-y-3">
           {recentRequests.length === 0 ? (
             <EmptyState icon={Receipt} title="No reorder requests yet" />
@@ -355,13 +303,15 @@ const Reorder = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/50">
-                    {["Asset", "Vendor", "Cost", "Status", "Date"].map(h => (
-                      <th key={h} className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">{h}</th>
+                    {["Asset", "Vendor", "Cost", "Status", "Date"].map((h) => (
+                      <th key={h} className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">
+                        {h}
+                      </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {recentRequests.map(req => (
+                  {recentRequests.map((req) => (
                     <tr key={req.id} className="border-b last:border-0 hover:bg-muted/40">
                       <td className="px-3 py-2.5 font-medium">{req.asset?.name || "Unknown"}</td>
                       <td className="px-3 py-2.5 text-xs text-muted-foreground">{req.asset?.vendor || "—"}</td>
@@ -377,23 +327,22 @@ const Reorder = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Cost Estimation Dialog */}
       <Dialog open={costDialog} onOpenChange={setCostDialog}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <IndianRupee className="h-4 w-4" /> Reorder Cost Estimation
             </DialogTitle>
-            <DialogDescription>
-              Enter estimated replacement cost for each asset. Orders above {formatCurrency(BUDGET_LIMIT)} require admin approval.
-            </DialogDescription>
+            <DialogDescription>Enter estimated replacement cost for each selected asset.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 max-h-[300px] overflow-y-auto">
-            {selectedItems.map(item => (
+            {selectedItems.map((item) => (
               <div key={item.id} className="flex items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{item.name}</p>
-                  <p className="text-xs text-muted-foreground">{item.asset_id} · {item.vendor || "No vendor"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {item.asset_id} · {item.vendor || "No vendor"}
+                  </p>
                 </div>
                 <div className="w-32">
                   <Input
@@ -401,7 +350,7 @@ const Reorder = () => {
                     placeholder="₹ Cost"
                     className="h-8 text-sm"
                     value={costInputs[item.id] || ""}
-                    onChange={e => setCostInputs(prev => ({ ...prev, [item.id]: e.target.value }))}
+                    onChange={(e) => setCostInputs((prev) => ({ ...prev, [item.id]: e.target.value }))}
                   />
                 </div>
               </div>
@@ -409,50 +358,28 @@ const Reorder = () => {
           </div>
           <div className="space-y-2">
             <Label className="text-xs">Notes (optional)</Label>
-            <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="Reason for reorder..." className="text-sm" />
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              placeholder="Reason for reorder..."
+              className="text-sm"
+            />
           </div>
           <div className="rounded-md border px-4 py-3 space-y-1">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Total Estimated Cost:</span>
               <span className="font-bold">{formatCurrency(totalEstimatedCost)}</span>
             </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Budget Limit:</span>
-              <span>{formatCurrency(BUDGET_LIMIT)}</span>
-            </div>
-            {needsApproval && (
-              <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 pt-1">
-                <ShieldAlert className="h-3.5 w-3.5" />
-                Exceeds limit — will require admin approval before processing
-              </div>
-            )}
-            {!needsApproval && totalEstimatedCost > 0 && (
-              <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 pt-1">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                Within budget — will be auto-approved
-              </div>
-            )}
+            <p className="text-xs text-muted-foreground">All submitted orders go directly to history.</p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCostDialog(false)}>Cancel</Button>
-            <Button onClick={handleSubmitReorder} disabled={processing || totalEstimatedCost <= 0}>
-              {processing ? "Submitting..." : needsApproval ? "Submit for Approval" : "Submit & Auto-Approve"}
+            <Button variant="outline" onClick={() => setCostDialog(false)}>
+              Cancel
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Reject Dialog */}
-      <Dialog open={rejectDialog} onOpenChange={setRejectDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Reject Reorder Request</DialogTitle>
-            <DialogDescription>Please provide a reason for rejecting this request.</DialogDescription>
-          </DialogHeader>
-          <Textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={3} placeholder="Reason for rejection..." />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectDialog(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleReject} disabled={!rejectReason.trim()}>Reject Request</Button>
+            <Button onClick={handleSubmitReorder} disabled={processing || totalEstimatedCost <= 0}>
+              {processing ? "Submitting..." : "Submit Order"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -461,3 +388,4 @@ const Reorder = () => {
 };
 
 export default Reorder;
+
