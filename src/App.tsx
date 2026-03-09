@@ -38,7 +38,7 @@ const ProtectedRoutes = () => {
 const LoginRoute = () => {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return null;
-  if (isAuthenticated) return <Navigate to="/" replace />;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
   return <Login />;
 };
 
