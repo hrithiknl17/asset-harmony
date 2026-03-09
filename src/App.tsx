@@ -19,6 +19,7 @@ import Sales from "@/pages/Sales";
 import SalesReport from "@/pages/SalesReport";
 import ActivityLog from "@/pages/ActivityLog";
 import Login from "@/pages/Login";
+import Home from "@/pages/Home";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,7 +38,7 @@ const ProtectedRoutes = () => {
 const LoginRoute = () => {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return null;
-  if (isAuthenticated) return <Navigate to="/" replace />;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
   return <Login />;
 };
 
@@ -49,9 +50,10 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<Home />} />
             <Route path="/login" element={<LoginRoute />} />
             <Route element={<ProtectedRoutes />}>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/products" element={<Products />} />
               <Route path="/stock-check" element={<StockCheck />} />
               <Route path="/sales" element={<Sales />} />
