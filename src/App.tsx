@@ -19,7 +19,7 @@ import Sales from "@/pages/Sales";
 import SalesReport from "@/pages/SalesReport";
 import ActivityLog from "@/pages/ActivityLog";
 import Login from "@/pages/Login";
-import Home from "@/pages/Home";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
