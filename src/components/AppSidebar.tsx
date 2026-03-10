@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 const navItems = [
-  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ["admin", "manager", "auditor", "sales"], group: "Overview" },
+  { to: "/", icon: LayoutDashboard, label: "Dashboard", roles: ["admin", "manager", "auditor", "sales"], group: "Overview" },
   { to: "/products", icon: Package, label: "Products", roles: ["admin", "manager"], group: "Inventory" },
   { to: "/stock-check", icon: PackageCheck, label: "Stock Check", roles: ["admin", "manager", "sales"], group: "Inventory" },
   { to: "/sales", icon: ShoppingCart, label: "Sales", roles: ["admin", "manager", "sales"], group: "Commerce" },
